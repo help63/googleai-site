@@ -3,6 +3,8 @@ import Script from "next/script";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 
 export const metadata = {
+  metadataBase: new URL("https://googleai-site.vercel.app"),
+
   title: "GoogleAi — News & AI Studio",
   description:
     "Latest Pakistan, World, Sports, Technology news and AI tools."

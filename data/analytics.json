@@ -1,100 +1,30 @@
 {
-  "totalViews": 11,
+  "totalViews": 2,
   "visitors": {
-    "ea953451-cc8e-4402-bb07-a84acf4380f9": {
+    "7de3f4fa-7e78-4b2e-8dd1-6db0204ea62d": {
       "country": "Unknown",
-      "firstSeen": "2026-08-29T00:47:34.297Z",
-      "views": 3,
-      "lastSeen": "2026-08-29T00:47:48.210Z"
-    },
-    "c7885f4e-ed13-4759-8047-b6fa1c4f48cf": {
-      "country": "Unknown",
-      "firstSeen": "2026-08-29T00:59:42.112Z",
-      "views": 3,
-      "lastSeen": "2026-08-29T01:17:51.781Z"
-    },
-    "b15aa69e-2bc0-4c44-9972-448d4353d84f": {
-      "country": "Unknown",
-      "firstSeen": "2026-08-29T01:03:36.259Z",
-      "views": 1,
-      "lastSeen": "2026-08-29T01:03:36.259Z"
-    },
-    "efac2faa-2a4f-4cef-a7a8-6ee0d76afe80": {
-      "country": "Unknown",
-      "firstSeen": "2026-08-29T01:20:20.089Z",
-      "views": 3,
-      "lastSeen": "2026-08-29T01:22:30.275Z"
-    },
-    "bf70c3d8-efc5-47c7-9a02-8ef19f158a7a": {
-      "country": "Unknown",
-      "firstSeen": "2026-08-29T01:58:43.491Z",
-      "views": 1,
-      "lastSeen": "2026-08-29T01:58:43.491Z"
+      "firstSeen": "2026-08-29T05:18:40.323Z",
+      "views": 2,
+      "lastSeen": "2026-08-29T05:18:53.259Z"
     }
   },
   "countries": {
-    "Unknown": 11
+    "Unknown": 2
   },
   "pages": {
-    "/": 9,
-    "/recipes": 1,
-    "/travel": 1
+    "/": 1,
+    "/shopping": 1
   },
   "recent": [
     {
       "country": "Unknown",
-      "page": "/",
-      "time": "2026-08-29T01:58:43.491Z"
+      "page": "/shopping",
+      "time": "2026-08-29T05:18:53.259Z"
     },
     {
       "country": "Unknown",
       "page": "/",
-      "time": "2026-08-29T01:22:30.275Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/",
-      "time": "2026-08-29T01:22:00.520Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/",
-      "time": "2026-08-29T01:20:20.089Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/",
-      "time": "2026-08-29T01:17:51.781Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/",
-      "time": "2026-08-29T01:17:26.518Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/",
-      "time": "2026-08-29T01:03:36.259Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/",
-      "time": "2026-08-29T00:59:42.112Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/travel",
-      "time": "2026-08-29T00:47:48.210Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/recipes",
-      "time": "2026-08-29T00:47:45.501Z"
-    },
-    {
-      "country": "Unknown",
-      "page": "/",
-      "time": "2026-08-29T00:47:34.297Z"
+      "time": "2026-08-29T05:18:40.323Z"
     }
   ]
 }
