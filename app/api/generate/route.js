@@ -127,6 +127,21 @@ export async function POST(request) {
       { status: 400 }
     );
   } catch (error) {
+    const msg = String(error?.message || error || "");
+    if (
+      error?.status === 429 ||
+      msg.includes("429") ||
+      msg.includes("RESOURCE_EXHAUSTED") ||
+      msg.includes("quota")
+    ) {
+      return Response.json(
+        {
+          error: "AI service quota temporarily reached.",
+          message: "AI quota is temporarily unavailable. Please try again shortly."
+        },
+        { status: 200 }
+      );
+    }
     console.error("AI generation error:", error);
 
     return NextResponse.json(
