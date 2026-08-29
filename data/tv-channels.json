@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Geo News",
+    "country": "Pakistan",
+    "region": "Asia",
+    "language": "Urdu",
+    "logo": "https://www.google.com/s2/favicons?domain=geo.tv&sz=128",
+    "url": "https://live.geo.tv/",
+    "type": "official"
+  },
+  {
+    "name": "ARY News",
+    "country": "Pakistan",
+    "region": "Asia",
+    "language": "Urdu",
+    "logo": "https://www.google.com/s2/favicons?domain=arynews.tv&sz=128",
+    "url": "https://live.arynews.tv/",
+    "type": "official"
+  },
+  {
+    "name": "PTV News",
+    "country": "Pakistan",
+    "region": "Asia",
+    "language": "Urdu",
+    "logo": "https://www.google.com/s2/favicons?domain=ptv.com.pk&sz=128",
+    "url": "https://www.ptv.com.pk/ptvcorporate/livestreaming",
+    "type": "official"
+  },
+  {
+    "name": "Al Jazeera English",
+    "country": "Qatar",
+    "region": "Middle East",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=aljazeera.com&sz=128",
+    "url": "https://www.aljazeera.com/video/live/",
+    "type": "official"
+  },
+  {
+    "name": "BBC News",
+    "country": "United Kingdom",
+    "region": "Europe",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=bbc.com&sz=128",
+    "url": "https://www.bbc.com/news",
+    "type": "official"
+  },
+  {
+    "name": "DW News",
+    "country": "Germany",
+    "region": "Europe",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=dw.com&sz=128",
+    "url": "https://www.dw.com/en/live-tv/s-100825",
+    "type": "official"
+  },
+  {
+    "name": "France 24",
+    "country": "France",
+    "region": "Europe",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=france24.com&sz=128",
+    "url": "https://www.france24.com/en/live",
+    "type": "official"
+  },
+  {
+    "name": "TRT World",
+    "country": "Türkiye",
+    "region": "Europe",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=trtworld.com&sz=128",
+    "url": "https://www.trtworld.com/live",
+    "type": "official"
+  },
+  {
+    "name": "NHK WORLD-JAPAN",
+    "country": "Japan",
+    "region": "Asia",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=nhk.or.jp&sz=128",
+    "url": "https://www3.nhk.or.jp/nhkworld/en/live/",
+    "type": "official"
+  },
+  {
+    "name": "ABC News Australia",
+    "country": "Australia",
+    "region": "Oceania",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=abc.net.au&sz=128",
+    "url": "https://www.abc.net.au/news/",
+    "type": "official"
+  },
+  {
+    "name": "CBC News",
+    "country": "Canada",
+    "region": "Americas",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=cbc.ca&sz=128",
+    "url": "https://www.cbc.ca/news",
+    "type": "official"
+  },
+  {
+    "name": "Bloomberg Television",
+    "country": "United States",
+    "region": "Americas",
+    "language": "English",
+    "logo": "https://www.google.com/s2/favicons?domain=bloomberg.com&sz=128",
+    "url": "https://www.bloomberg.com/live",
+    "type": "official"
+  }
+]

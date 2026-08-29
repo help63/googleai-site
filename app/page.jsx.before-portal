@@ -1,0 +1,384 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+const categories = [
+  "Latest",
+  "Pakistan",
+  "World",
+  "Sports",
+  "Entertainment",
+  "Business",
+  "Technology",
+  "Health",
+  "Science",
+  "Videos",
+];
+
+export default function Home() {
+  const [news, setNews] = useState([]);
+  const [category, setCategory] = useState("Latest");
+  const [prompt, setPrompt] = useState("");
+  const [type, setType] = useState("chat");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch(`/api/news?category=${encodeURIComponent(category)}`)
+      .then((r) => r.json())
+      .then(setNews)
+      .catch(() => setNews([]));
+  }, [category]);
+
+  async function generate() {
+    if (!prompt.trim() || loading) return;
+
+    setLoading(true);
+    setError("");
+    setResult(null);
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, type }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error || "Generation failed.");
+
+      setResult(data);
+    } catch (e) {
+      setError(e.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main>
+      <nav className="nav">
+        <a href="/" className="brand">
+          <span className="logo">G</span>
+          <span>Google<span>Ai</span></span>
+        </a>
+
+        <div className="navlinks">
+          <a href="/tv">🌍 Live TV</a>
+          <a href="/category/Latest">📰 News</a>
+          <a href="#features">🤖 AI Tools</a>
+          <a href="#studio">✨ AI Studio</a>
+          <a href="#admin">👑 Admin</a>
+          <a href="#contact">Contact</a>
+        </div>
+
+        <a className="navbutton" href="#ai">
+          Start AI →
+        </a>
+      </nav>
+
+      <section className="hero">
+        <div className="heroCopy">
+          <div className="pill">
+            <span className="dot" />
+            NEWS + AI CREATIVE PLATFORM
+          </div>
+
+          <h1>
+            News.
+            <br />
+            <em>AI. Everything.</em>
+          </h1>
+
+          <p>
+            Latest Pakistan and world news, AI chat, image creation and
+            professional video prompt tools — all in one platform.
+          </p>
+
+          <div className="heroActions">
+            <a className="primary" href="#news">Read Latest News</a>
+            <a className="secondary" href="#ai">Open AI Studio</a>
+          </div>
+
+          <div className="stats">
+            <div><b>24/7</b><small>News platform</small></div>
+            <div><b>AI</b><small>Creative tools</small></div>
+            <div><b>∞</b><small>Ideas</small></div>
+          </div>
+        </div>
+
+        <div className="heroCard">
+          <div className="cardTop">
+            <span>GoogleAi News</span>
+            <span className="live">● LIVE</span>
+          </div>
+
+          <div className="heroPreview">
+            <div className="bigSpark">✦</div>
+            <h3>What's happening?</h3>
+            <p>News and AI in one powerful workspace.</p>
+          </div>
+
+          <div className="miniTools">
+            <span>📰 News</span>
+            <span>✨ AI</span>
+            <span>🎬 Video</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="news" className="section newsSection">
+        <div className="sectionTitle left">
+          <span>GOOGLEAI NEWS</span>
+          <h2>Latest <em>headlines.</em></h2>
+        </div>
+
+        <div className="categoryBar">
+          {categories.map((item) => (
+            <button
+              key={item}
+              className={category === item ? "active" : ""}
+              onClick={() => setCategory(item)}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        {news.length ? (
+          <div className="newsGridHome">
+            {news.slice(0, 9).map((article) => (
+              <a
+                href={`/news/${article.slug}`}
+                className="homeNewsCard"
+                key={article.id}
+              >
+                {article.image ? (
+                  <img src={article.image} alt={article.title} />
+                ) : (
+                  <div className="newsPlaceholder">📰</div>
+                )}
+
+                <div className="homeNewsBody">
+                  <small>{article.category}</small>
+                  {article.breaking && (
+                    <strong className="breaking">BREAKING</strong>
+                  )}
+                  <h3>{article.title}</h3>
+                  <p>{article.excerpt}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div className="empty">
+            <span>📰</span>
+            <h3>No news published yet</h3>
+            <p>Admin can publish articles from the dashboard.</p>
+          </div>
+        )}
+      </section>
+
+      <section id="ai" className="studio">
+        <div className="studioHead">
+          <div>
+            <span>AI CREATIVE STUDIO</span>
+            <h2>Prompt → <em>Creation</em></h2>
+          </div>
+
+          <div className="status">● AI READY</div>
+        </div>
+
+        <div className="workspace">
+          <div className="promptBox">
+            <label>What do you want to create?</label>
+
+            <div className="toolTabs">
+              <button
+                className={type === "chat" ? "active" : ""}
+                onClick={() => setType("chat")}
+              >
+                💬 Chat
+              </button>
+
+              <button
+                className={type === "image" ? "active" : ""}
+                onClick={() => setType("image")}
+              >
+                🖼️ Image
+              </button>
+
+              <button
+                className={type === "video" ? "active" : ""}
+                onClick={() => setType("video")}
+              >
+                🎬 Video
+              </button>
+            </div>
+
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder={
+                type === "image"
+                  ? "A cinematic futuristic city at sunset..."
+                  : type === "video"
+                  ? "A cinematic drone shot over Islamabad..."
+                  : "Ask GoogleAi anything..."
+              }
+            />
+
+            <div className="promptBottom">
+              <span>
+                {type === "chat"
+                  ? "AI Chat"
+                  : type === "image"
+                  ? "AI Image"
+                  : "AI Video Workflow"}
+              </span>
+
+              <button
+                className="generate"
+                onClick={generate}
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Generate ✦"}
+              </button>
+            </div>
+          </div>
+
+          <div className="resultBox">
+            <div className="resultHeader">
+              <div>
+                <small>OUTPUT</small>
+                <h3>AI Result</h3>
+              </div>
+            </div>
+
+            {!result && !error && (
+              <div className="resultPreview">
+                <div className="resultIcon">✦</div>
+                <h3>Your result appears here</h3>
+                <p>Enter a prompt and select an AI tool.</p>
+              </div>
+            )}
+
+            {loading && (
+              <div className="resultPreview">
+                <div className="resultIcon">✨</div>
+                <h3>AI is working...</h3>
+              </div>
+            )}
+
+            {error && <div className="msg error">⚠️ {error}</div>}
+
+            {result?.type === "chat" && (
+              <div className="msg">{result.text}</div>
+            )}
+
+            {result?.type === "image" && (
+              <div className="resultImage">
+                <img
+                  src={`data:${result.mimeType};base64,${result.data}`}
+                  alt="AI generated"
+                />
+                <a
+                  className="download"
+                  download="googleai-image.png"
+                  href={`data:${result.mimeType};base64,${result.data}`}
+                >
+                  Download Image ↓
+                </a>
+              </div>
+            )}
+
+            {result?.type === "video" && (
+              <div className="resultPreview">
+                <div className="resultIcon">🎬</div>
+                <h3>Video workflow ready</h3>
+                <p>{prompt}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section id="video" className="videoSection">
+        <div className="sectionTitle">
+          <span>AI VIDEO</span>
+          <h2>Turn ideas into <em>video prompts.</em></h2>
+          <p>
+            Build cinematic scenes, camera movements, characters and
+            production-ready prompts from one workspace.
+          </p>
+        </div>
+
+        <div className="videoFeatures">
+          <Feature icon="🎬" title="Cinematic Prompts" text="Create detailed video concepts." />
+          <Feature icon="🎥" title="Camera Control" text="Describe shots, lenses and movement." />
+          <Feature icon="🎨" title="Visual Style" text="Define lighting, mood and atmosphere." />
+          <Feature icon="⚡" title="Fast Workflow" text="Move from idea to production prompt." />
+        </div>
+      </section>
+
+      <section className="adSection">
+        <span>ADVERTISEMENT</span>
+        <div className="adBox">
+          Google AdSense ad space
+        </div>
+      </section>
+
+      <section className="admin">
+        <div>
+          <span>ADMIN CONTROL</span>
+          <h2>Your private <em>News + AI Studio.</em></h2>
+          <p>
+            Publish news, manage content and control your private AI
+            workspace from the admin dashboard.
+          </p>
+          <a className="primary" href="/admin">Open Admin →</a>
+        </div>
+
+        <div className="adminCards">
+          <div>📰<b>News CMS</b><small>Publish articles</small></div>
+          <div>📊<b>Analytics</b><small>Track traffic</small></div>
+          <div>💰<b>Ads</b><small>Monetization ready</small></div>
+          <div>🔐<b>Security</b><small>Protected admin</small></div>
+        </div>
+      </section>
+
+      <footer>
+        <div className="footerBrand">
+          <span className="logo">G</span>
+          <div>
+            <b>GoogleAi</b>
+            <p>News + AI Creative Platform</p>
+          </div>
+        </div>
+
+        <div className="footerLinks">
+          <a href="#news">News</a>
+          <a href="#ai">AI Studio</a>
+          <a href="#video">AI Video</a>
+          <a href="/admin">Admin</a>
+        </div>
+
+        <div className="copyright">
+          © 2026 GoogleAi. All rights reserved.
+        </div>
+      </footer>
+    </main>
+  );
+}
+
+function Feature({ icon, title, text }) {
+  return (
+    <article className="feature">
+      <div className="featureIcon">{icon}</div>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </article>
+  );
+}

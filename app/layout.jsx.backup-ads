@@ -1,0 +1,41 @@
+import "./globals.css";
+
+export const metadata = {
+  metadataBase: new URL("https://googleai-site.vercel.app"),
+  title: {
+    default: "GoogleAi News — Pakistan, World, Sports & AI",
+    template: "%s | GoogleAi News",
+  },
+  description:
+    "Latest Pakistan, world, sports, technology and entertainment news with AI creative tools.",
+  keywords: [
+    "Pakistan news",
+    "latest news",
+    "world news",
+    "sports news",
+    "technology news",
+    "AI tools",
+    "AI image generator",
+    "AI video prompts",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    title: "GoogleAi News — News + AI",
+    description:
+      "Latest news and powerful AI creative tools in one platform.",
+    url: "https://googleai-site.vercel.app",
+    siteName: "GoogleAi News",
+    type: "website",
+  },
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}

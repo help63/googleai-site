@@ -1,0 +1,86 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import LogoutButton from "./LogoutButton";
+import NewsManager from "./NewsManager";
+
+export default async function Dashboard() {
+  const cookieStore = await cookies();
+
+  if (cookieStore.get("admin_session")?.value !== "authenticated") {
+    redirect("/admin");
+  }
+
+  const geminiConfigured = !!process.env.GEMINI_API_KEY;
+
+  return (
+    <main style={{
+      minHeight: "100vh",
+      background: "#080d1a",
+      color: "#fff",
+      padding: "30px 20px",
+      fontFamily: "Arial, sans-serif"
+    }}>
+      <div style={{ maxWidth: 1100, margin: "auto" }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 20,
+          flexWrap: "wrap"
+        }}>
+          <div>
+            <h1 style={{ fontSize: 36, marginBottom: 8 }}>
+              Admin Dashboard
+            </h1>
+            <p style={{ color: "#94a3b8" }}>
+              GoogleAI News administration panel
+            </p>
+          </div>
+          <LogoutButton />
+        </div>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+          gap: 16,
+          marginTop: 30
+        }}>
+          <div className="admin-stat">
+            <h3>Admin</h3>
+            <strong style={{ color: "#22c55e" }}>● Logged in</strong>
+          </div>
+
+          <div className="admin-stat">
+            <h3>Gemini API</h3>
+            <strong style={{
+              color: geminiConfigured ? "#22c55e" : "#ef4444"
+            }}>
+              {geminiConfigured ? "● Configured" : "● Not configured"}
+            </strong>
+          </div>
+
+          <div className="admin-stat">
+            <h3>Website</h3>
+            <strong style={{ color: "#22c55e" }}>● Online</strong>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 30 }}>
+          <NewsManager />
+        </div>
+
+        <div style={{ marginTop: 25 }}>
+          <a
+            href="/"
+            style={{
+              color: "#60a5fa",
+              textDecoration: "none"
+            }}
+          >
+            ← Open Website
+          </a>
+        </div>
+      </div>
+    </main>
+  );
+}
