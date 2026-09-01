@@ -1,28 +1,71 @@
 import Link from "next/link";
+import fs from "fs/promises";
+import path from "path";
+
+async function getArticle(slug) {
+  const file = path.join(process.cwd(), "data", "articles.json");
+
+  const data = JSON.parse(await fs.readFile(file, "utf8"));
+
+  return data.find(
+    (article) =>
+      article.slug === slug &&
+      article.published !== false
+  );
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
-  const title = slug
-    .replaceAll("-", " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const article = await getArticle(slug);
 
   return {
-    title: `${title} | GoogleAI Site`,
-    description:
-      "Technology, AI and digital resources article from GoogleAI Site.",
+    title: article
+      ? `${article.title} | GoogleAI Site`
+      : "Article | GoogleAI Site",
+    description: article?.content?.slice(0, 160) || "",
   };
 }
 
 export default async function ArticlePage({ params }) {
   const { slug } = await params;
 
-  const title = slug
-    .replaceAll("-", " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const article = await getArticle(slug);
 
-  const publishedDate = "2026-09-01";
-  const updatedDate = "2026-09-01";
+  if (!article) {
+    return (
+      <main className="portal">
+        <section className="section">
+          <h1>Article Not Found</h1>
+        </section>
+      </main>
+    );
+  }
+
+  const articleUrl =
+    `https://googleai-site.vercel.app/articles/${article.slug}`;
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": article.title,
+    "author": {
+      "@type": "Organization",
+      "name": article.author,
+      "url":
+        "https://googleai-site.vercel.app/author/googleai-team"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "GoogleAI Site"
+    },
+    "datePublished": article.publishedAt,
+    "dateModified": article.updatedAt,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": articleUrl
+    }
+  };
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -43,8 +86,8 @@ export default async function ArticlePage({ params }) {
       {
         "@type": "ListItem",
         "position": 3,
-        "name": title,
-        "item": `https://googleai-site.vercel.app/articles/${params.slug}`
+        "name": article.title,
+        "item": articleUrl
       }
     ]
   };
@@ -55,46 +98,13 @@ export default async function ArticlePage({ params }) {
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "What is Artificial Intelligence?",
+        "name": `What is ${article.category}?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Artificial Intelligence is technology that enables computer systems to perform tasks that normally require human intelligence."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How is AI changing technology?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "AI is improving automation, productivity, research and digital experiences across many industries."
+          "text": article.content.slice(0, 200)
         }
       }
     ]
-  };
-
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": title,
-    "author": {
-      "@type": "Organization",
-      "name": "GoogleAI Editorial Team",
-      "url": "https://googleai-site.vercel.app/author/googleai-team"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "GoogleAI Site",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://googleai-site.vercel.app/images/author-placeholder.jpg"
-      }
-    },
-    "datePublished": publishedDate,
-    "dateModified": updatedDate,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": `https://googleai-site.vercel.app/articles/${slug}`
-    }
   };
 
   return (
@@ -104,68 +114,50 @@ export default async function ArticlePage({ params }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schema),
+            __html: JSON.stringify(schema)
           }}
         />
 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema),
+            __html: JSON.stringify(breadcrumbSchema)
           }}
         />
 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(breadcrumbSchema),
+            __html: JSON.stringify(faqSchema)
           }}
         />
 
         <span className="category">
-          ARTICLE
+          {article.category}
         </span>
 
-        <h1>{title}</h1>
+        <h1>{article.title}</h1>
 
         <p>
           By{" "}
           <Link href="/author/googleai-team">
-            GoogleAI Editorial Team
+            {article.author}
           </Link>
         </p>
 
         <p>
-          Published: {publishedDate}
+          Published: {article.publishedAt}
         </p>
 
         <p>
-          Updated: {updatedDate}
+          Updated: {article.updatedAt}
         </p>
 
         <hr />
 
-        <p>
-          Welcome to GoogleAI Site. This article provides useful
-          information, explanations and research about artificial
-          intelligence, technology and digital platforms.
-        </p>
-
-        <h2>Overview</h2>
-
-        <p>
-          Technology is continuously changing. Our editorial team
-          researches topics and creates helpful guides for readers.
-        </p>
-
-        <h2>Key Information</h2>
-
-        <ul>
-          <li>AI and technology insights</li>
-          <li>Digital tools and resources</li>
-          <li>Latest technology trends</li>
-          <li>Practical explanations</li>
-        </ul>
+        <div>
+          {article.content}
+        </div>
 
         <h2>Related Articles</h2>
 
@@ -187,15 +179,7 @@ export default async function ArticlePage({ params }) {
           </li>
         </ul>
 
-        <h2>Conclusion</h2>
-
-        <p>
-          GoogleAI Site aims to provide accurate, useful and
-          regularly updated technology content.
-        </p>
-
       </section>
     </main>
   );
 }
-
