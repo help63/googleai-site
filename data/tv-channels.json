@@ -106,5 +106,17 @@
     "logo": "https://www.google.com/s2/favicons?domain=bloomberg.com&sz=128",
     "url": "https://www.bloomberg.com/live",
     "type": "official"
+  },
+  {
+    "id": "c1fabdea-8201-4bbf-87d3-ba7a0bf150cc",
+    "name": "All World 🌍 tv channel list",
+    "country": "International",
+    "region": "World",
+    "language": "English",
+    "logo": "",
+    "url": "https://iptv-org.github.io/iptv/index.m3u",
+    "type": "official",
+    "enabled": true,
+    "createdAt": "2026-08-30T03:26:06.126Z"
   }
 ]

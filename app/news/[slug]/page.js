@@ -1,4 +1,7 @@
+import AdManager from "../../components/AdManager";
+
 import fs from "fs/promises";
+import AdSlot from "../../../components/AdSlot";
 import path from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -21,6 +24,9 @@ export default async function ArticlePage({ params }) {
   if (!article) notFound();
 
   return (
+    <>
+      <AdManager provider="Google AdSense" slot="news-top" />
+      <AdSlot title="Advertisement Top" />
     <main className="news-page">
       <div className="news-container">
         <Link href="/" className="back-link">← Home</Link>
@@ -56,5 +62,7 @@ export default async function ArticlePage({ params }) {
         </article>
       </div>
     </main>
+      <AdSlot title="Advertisement Bottom" />
+    </>
   );
 }

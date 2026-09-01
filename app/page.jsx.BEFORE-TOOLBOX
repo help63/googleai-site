@@ -1,0 +1,67 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+
+const nav = [
+  ["Home", "/"],
+  ["🛒 Shopping", "/shopping"],
+  ["📱 Mobiles", "/mobiles"],
+  ["💼 Jobs", "/jobs"],
+  ["💻 Electronics", "/electronics"],
+  ["👕 Garments", "/garments"],
+  ["News", "/category/Latest"],
+  ["Business", "/category/Business"],
+  ["Cricket", "/cricket"],
+  ["Videos", "/videos"],
+  ["Live TV", "/tv"],
+  ["AI Tools", "/#features"],
+  ["AI Studio", "/#studio"],
+  ["Islam", "/islam"],
+  ["Articles", "/articles"],
+  ["Recipes", "/recipes"],
+  ["Travel", "/travel"],
+];
+
+const news = [
+  "Pakistan اور کشمیر ایک دوسرے کے بغیر ادھورے ہیں، نومنتخب وزیراعظم آزاد کشمیر کا پہلا خطاب",
+  "پمز آتشزدگی: پارلیمان میں حکومت اور اپوزیشن کے درمیان لفظی جنگ",
+  "جنوبی وزیرستان اور باجوڑ میں بم دھماکے، ایک شخص جاں بحق",
+  "ٹیکنالوجی اور AI کی دنیا سے تازہ ترین اہم خبریں",
+];
+
+function LiveClock() {
+  const [time, setTime] = useState("");
+  const [date, setDate] = useState("");
+
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString("en-PK", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+      }));
+      setDate(now.toLocaleDateString("en-PK", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }));
+    };
+
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="live-info">
+      <span>🕒 <b id="live-clock">{time || "Loading..."}</b></span>
+      <span>📅 <b id="live-date">{date || "Loading..."}</b></span>
+      <span>🌙 <b id="hijri-date">Hijri Date</b></span>
+    </div>
+  );
+}
+
+export default LiveClock;

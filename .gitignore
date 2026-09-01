@@ -7,3 +7,8 @@ out/
 .env.local
 .vercel
 .env*
+
+.env
+.env.local
+.env.*.local
+!.env.example

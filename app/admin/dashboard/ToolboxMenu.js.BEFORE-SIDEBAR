@@ -1,0 +1,109 @@
+"use client";
+
+import { useState } from "react";
+
+const tools = [
+  ["🏠", "Home", "Edit homepage content"],
+  ["🖼️", "Logo", "Change website logo"],
+  ["🔗", "Links", "Manage website links"],
+  ["🎬", "Videos", "Add or manage videos"],
+  ["📰", "News", "Manage news & categories"],
+  ["🤖", "AI Tools", "Manage AI tools"],
+  ["🛒", "Shopping", "Manage shopping section"],
+  ["📱", "Mobiles", "Manage mobiles section"],
+  ["💻", "Electronics", "Manage electronics"],
+  ["💼", "Jobs", "Manage jobs"],
+  ["📺", "Live TV", "Manage TV channels"],
+  ["📝", "Articles", "Manage articles"],
+  ["🍳", "Recipes", "Manage recipes"],
+  ["✈️", "Travel", "Manage travel"],
+  ["⚙️", "Settings", "Website settings"],
+];
+
+export default function ToolboxMenu() {
+  const [active, setActive] = useState("Home");
+
+  return (
+    <section style={{
+      marginTop: 30,
+      padding: 22,
+      borderRadius: 22,
+      background: "linear-gradient(145deg,#111827,#1e1b4b)",
+      border: "1px solid rgba(255,255,255,.12)",
+      boxShadow: "0 20px 50px rgba(0,0,0,.3)"
+    }}>
+      <h2 style={{
+        margin: "0 0 6px",
+        fontSize: 28
+      }}>
+        🧰 Website Toolbox
+      </h2>
+
+      <p style={{
+        color: "#94a3b8",
+        marginTop: 0
+      }}>
+        Full website controls — Admin only
+      </p>
+
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+        gap: 14,
+        marginTop: 20
+      }}>
+        {tools.map(([icon, title, description]) => (
+          <button
+            key={title}
+            onClick={() => setActive(title)}
+            style={{
+              border: "1px solid rgba(255,255,255,.15)",
+              borderRadius: 18,
+              padding: 18,
+              minHeight: 120,
+              cursor: "pointer",
+              color: "white",
+              textAlign: "center",
+              background:
+                active === title
+                  ? "linear-gradient(145deg,#7c3aed,#ec4899)"
+                  : "linear-gradient(145deg,#1f2937,#312e81)",
+              boxShadow:
+                active === title
+                  ? "0 15px 35px rgba(124,58,237,.35)"
+                  : "0 8px 20px rgba(0,0,0,.2)",
+              transition: "all .2s ease"
+            }}
+          >
+            <div style={{ fontSize: 34 }}>{icon}</div>
+            <strong style={{ display: "block", marginTop: 8 }}>
+              {title}
+            </strong>
+            <small style={{
+              display: "block",
+              marginTop: 5,
+              opacity: .75
+            }}>
+              {description}
+            </small>
+          </button>
+        ))}
+      </div>
+
+      <div style={{
+        marginTop: 22,
+        padding: 18,
+        borderRadius: 16,
+        background: "rgba(255,255,255,.06)"
+      }}>
+        <strong>Selected: {active}</strong>
+        <p style={{
+          color: "#cbd5e1",
+          marginBottom: 0
+        }}>
+          {active} management panel is ready for the next controls.
+        </p>
+      </div>
+    </section>
+  );
+}

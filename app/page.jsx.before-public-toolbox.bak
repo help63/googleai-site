@@ -1,0 +1,547 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+
+export default function HomePage() {
+  const [content, setContent] = useState([]);
+  const [tvChannels, setTvChannels] = useState([]);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    Promise.all([
+      fetch("/api/content", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+
+      fetch("/api/tv", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ])
+      .then(([contentData, tvData]) => {
+        if (!mounted) return;
+
+        if (contentData?.success) {
+          setContent(contentData.items || []);
+        }
+
+        if (tvData?.success) {
+          setTvChannels(tvData.channels || tvData.items || []);
+        }
+
+        setLoading(false);
+      })
+      .catch(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filteredContent = useMemo(() => {
+    const q = search.toLowerCase().trim();
+
+    return content.filter((item) => {
+      const type = String(item.type || "").toLowerCase();
+
+      const matchesCategory =
+        category === "all" || type === category;
+
+      const matchesSearch =
+        !q ||
+        String(item.title || "").toLowerCase().includes(q) ||
+        String(item.description || "").toLowerCase().includes(q) ||
+        type.includes(q);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [content, search, category]);
+
+  const getIcon = (type) => {
+    if (type === "game") return "🎮";
+    if (type === "movie") return "🎬";
+    if (type === "apk") return "📱";
+    if (type === "file") return "📁";
+    return "📦";
+  };
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background:
+          "radial-gradient(circle at top,#312e81 0,#0f172a 35%,#020617 100%)",
+        color: "#fff",
+      }}
+    >
+      {/* PUBLIC HEADER */}
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          backdropFilter: "blur(15px)",
+          background: "rgba(2,6,23,.88)",
+          borderBottom: "1px solid rgba(255,255,255,.1)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "auto",
+            padding: "15px 18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 15,
+            flexWrap: "wrap",
+          }}
+        >
+          <Link
+            href="/"
+            style={{
+              color: "#fff",
+              textDecoration: "none",
+              fontSize: 23,
+              fontWeight: 900,
+            }}
+          >
+            🚀 GoogleAI Site
+          </Link>
+
+          <nav
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <Link href="/" className="publicNav">🏠 Home</Link>
+            <Link href="/tv" className="publicNav">📺 Live TV</Link>
+            <Link href="/downloads" className="publicNav">📥 Downloads</Link>
+            <Link href="/about" className="publicNav">ℹ️ About</Link>
+          </nav>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section
+        style={{
+          maxWidth: 1200,
+          margin: "auto",
+          padding: "70px 18px 45px",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            padding: "7px 13px",
+            borderRadius: 30,
+            background: "rgba(124,58,237,.2)",
+            border: "1px solid rgba(167,139,250,.35)",
+            color: "#c4b5fd",
+            fontWeight: 800,
+          }}
+        >
+          ✨ Welcome
+        </div>
+
+        <h1
+          style={{
+            fontSize: "clamp(38px,7vw,72px)",
+            lineHeight: 1.05,
+            margin: "20px 0",
+            fontWeight: 950,
+          }}
+        >
+          Your All-in-One
+          <br />
+          <span style={{ color: "#a78bfa" }}>
+            Digital Portal
+          </span>
+        </h1>
+
+        <p
+          style={{
+            maxWidth: 720,
+            margin: "0 auto",
+            color: "#cbd5e1",
+            fontSize: 18,
+            lineHeight: 1.7,
+          }}
+        >
+          AI Tools, Games, Movies, APKs, Files and Live TV —
+          everything in one place.
+        </p>
+
+        {/* SEARCH */}
+        <div
+          style={{
+            maxWidth: 700,
+            margin: "30px auto 0",
+          }}
+        >
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="🔎 Search games, movies, APKs, files..."
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: 16,
+              borderRadius: 14,
+              border: "1px solid #475569",
+              background: "#0f172a",
+              color: "#fff",
+              fontSize: 16,
+              outline: "none",
+            }}
+          />
+        </div>
+      </section>
+
+      {/* QUICK FEATURES */}
+      <section
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto 35px",
+          padding: "0 18px",
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(180px,1fr))",
+          gap: 14,
+        }}
+      >
+        {[
+          ["🤖", "AI Tools", "/"],
+          ["🎮", "Games", "/downloads"],
+          ["🎬", "Movies", "/downloads"],
+          ["📱", "APKs", "/downloads"],
+          ["📺", "Live TV", "/tv"],
+          ["📁", "Files", "/downloads"],
+        ].map(([icon, title, href]) => (
+          <Link
+            key={title}
+            href={href}
+            style={{
+              padding: 20,
+              borderRadius: 16,
+              textDecoration: "none",
+              color: "#fff",
+              background: "rgba(15,23,42,.85)",
+              border: "1px solid #29324d",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 32 }}>{icon}</div>
+            <strong>{title}</strong>
+          </Link>
+        ))}
+      </section>
+
+      {/* CONTENT */}
+      <section
+        style={{
+          maxWidth: 1200,
+          margin: "auto",
+          padding: "20px 18px 60px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h2 style={{ marginBottom: 5 }}>
+              📥 Latest Content
+            </h2>
+            <p style={{ color: "#94a3b8" }}>
+              Latest uploads from the website.
+            </p>
+          </div>
+
+          <Link
+            href="/downloads"
+            style={{
+              padding: "10px 16px",
+              borderRadius: 10,
+              background: "#7c3aed",
+              color: "#fff",
+              textDecoration: "none",
+              fontWeight: 800,
+            }}
+          >
+            View All →
+          </Link>
+        </div>
+
+        {/* FILTERS */}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            margin: "20px 0",
+          }}
+        >
+          {[
+            ["all", "📦 All"],
+            ["game", "🎮 Games"],
+            ["movie", "🎬 Movies"],
+            ["apk", "📱 APKs"],
+            ["file", "📁 Files"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setCategory(value)}
+              style={{
+                padding: "9px 15px",
+                borderRadius: 20,
+                border: "1px solid #475569",
+                background:
+                  category === value
+                    ? "#7c3aed"
+                    : "#0f172a",
+                color: "#fff",
+                cursor: "pointer",
+                fontWeight: 800,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div
+            style={{
+              padding: 40,
+              textAlign: "center",
+              color: "#94a3b8",
+            }}
+          >
+            Loading content...
+          </div>
+        ) : filteredContent.length === 0 ? (
+          <div
+            style={{
+              padding: 40,
+              textAlign: "center",
+              background: "#111827",
+              borderRadius: 16,
+              color: "#94a3b8",
+            }}
+          >
+            No content available yet.
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit,minmax(220px,1fr))",
+              gap: 16,
+            }}
+          >
+            {filteredContent.slice(0, 12).map((item) => (
+              <article
+                key={item.id}
+                style={{
+                  overflow: "hidden",
+                  borderRadius: 16,
+                  background: "#111827",
+                  border: "1px solid #29324d",
+                }}
+              >
+                {item.thumbnailUrl ? (
+                  <img
+                    src={item.thumbnailUrl}
+                    alt={item.title || "Content"}
+                    style={{
+                      width: "100%",
+                      height: 145,
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      height: 145,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 52,
+                      background:
+                        "linear-gradient(135deg,#312e81,#111827)",
+                    }}
+                  >
+                    {getIcon(item.type)}
+                  </div>
+                )}
+
+                <div style={{ padding: 15 }}>
+                  <small
+                    style={{
+                      color: "#a78bfa",
+                      fontWeight: 900,
+                    }}
+                  >
+                    {String(item.type || "content").toUpperCase()}
+                  </small>
+
+                  <h3 style={{ margin: "7px 0" }}>
+                    {item.title || "Untitled"}
+                  </h3>
+
+                  {item.description && (
+                    <p
+                      style={{
+                        color: "#94a3b8",
+                        fontSize: 14,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {item.description}
+                    </p>
+                  )}
+
+                  {item.downloadUrl && (
+                    <a
+                      href={item.downloadUrl}
+                      download
+                      style={{
+                        display: "block",
+                        marginTop: 12,
+                        padding: 11,
+                        textAlign: "center",
+                        borderRadius: 9,
+                        background: "#16a34a",
+                        color: "#fff",
+                        textDecoration: "none",
+                        fontWeight: 900,
+                      }}
+                    >
+                      ⬇️ Download
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* LIVE TV */}
+      <section
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto 60px",
+          padding: "0 18px",
+        }}
+      >
+        <div
+          style={{
+            padding: 25,
+            borderRadius: 20,
+            background:
+              "linear-gradient(135deg,#111827,#1e1b4b)",
+            border: "1px solid #334155",
+          }}
+        >
+          <h2>📺 Live TV / IPTV</h2>
+
+          <p style={{ color: "#94a3b8" }}>
+            Watch available public channels.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit,minmax(180px,1fr))",
+              gap: 12,
+              marginTop: 18,
+            }}
+          >
+            {tvChannels
+              .filter((c) => c.enabled !== false)
+              .slice(0, 6)
+              .map((channel) => (
+                <Link
+                  key={channel.id}
+                  href="/tv"
+                  style={{
+                    padding: 16,
+                    borderRadius: 12,
+                    background: "#0f172a",
+                    color: "#fff",
+                    textDecoration: "none",
+                    border: "1px solid #29324d",
+                  }}
+                >
+                  📺 {channel.name}
+                </Link>
+              ))}
+          </div>
+
+          <Link
+            href="/tv"
+            style={{
+              display: "inline-block",
+              marginTop: 18,
+              padding: "11px 18px",
+              borderRadius: 10,
+              background: "#dc2626",
+              color: "#fff",
+              textDecoration: "none",
+              fontWeight: 900,
+            }}
+          >
+            ▶ Open Live TV
+          </Link>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer
+        style={{
+          borderTop: "1px solid rgba(255,255,255,.1)",
+          padding: "30px 18px",
+          textAlign: "center",
+          color: "#94a3b8",
+        }}
+      >
+        <p>© {new Date().getFullYear()} GoogleAI Site</p>
+        <p style={{ fontSize: 13 }}>
+          Public website • Admin controls are private
+        </p>
+      </footer>
+
+      <style jsx>{`
+        .publicNav {
+          color: #cbd5e1;
+          text-decoration: none;
+          padding: 8px 10px;
+          border-radius: 8px;
+        }
+
+        .publicNav:hover {
+          background: rgba(124, 58, 237, 0.2);
+          color: white;
+        }
+      `}</style>
+    </main>
+  );
+}

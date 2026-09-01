@@ -1,0 +1,711 @@
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+
+const nav = [
+  ["Home", "/"],
+  ["🛒 Shopping", "/shopping"],
+  ["📱 Mobiles", "/mobiles"],
+  ["💼 Jobs", "/jobs"],
+  ["💻 Electronics", "/electronics"],
+  ["👕 Garments", "/garments"],
+  ["News", "/category/Latest"],
+  ["Business", "/category/Business"],
+  ["Cricket", "/cricket"],
+  ["Videos", "/videos"],
+  ["Live TV", "/tv"],
+  ["AI Tools", "/#features"],
+  ["AI Studio", "/#studio"],
+  ["Islam", "/islam"],
+  ["Articles", "/articles"],
+  ["Recipes", "/recipes"],
+  ["Travel", "/travel"],
+];
+
+const news = [
+  "Pakistan اور کشمیر ایک دوسرے کے بغیر ادھورے ہیں، نومنتخب وزیراعظم آزاد کشمیر کا پہلا خطاب",
+  "پمز آتشزدگی: پارلیمان میں حکومت اور اپوزیشن کے درمیان لفظی جنگ",
+  "جنوبی وزیرستان اور باجوڑ میں بم دھماکے، ایک شخص جاں بحق",
+  "ٹیکنالوجی اور AI کی دنیا سے تازہ ترین اہم خبریں",
+];
+
+function LiveClock() {
+  return (
+    <div className="live-info">
+      <span>🕒 <b id="live-clock">Loading...</b></span>
+      <span>📅 <b id="live-date">Loading...</b></span>
+      <span>🌙 <b id="hijri-date">Hijri Date</b></span>
+    </div>
+  );
+}
+
+export default function Home() {
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState("");
+  const [writerPrompt, setWriterPrompt] = useState("");
+  const [writerResult, setWriterResult] = useState("");
+  const [writerLoading, setWriterLoading] = useState(false);
+  const [writerError, setWriterError] = useState("");
+
+  const [assistantPrompt, setAssistantPrompt] = useState("");
+  const [assistantResult, setAssistantResult] = useState("");
+  const [assistantLoading, setAssistantLoading] = useState(false);
+  const [assistantError, setAssistantError] = useState("");
+
+  async function runTextTool(prompt, type, setResult, setLoading, setError) {
+    if (!prompt.trim()) {
+      setError("Please enter a prompt.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setResult("");
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt, type }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.text) {
+        throw new Error(result.error || "Request failed.");
+      }
+
+      setResult(result.text);
+    } catch (error) {
+      setError(error.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function generateWriter() {
+    runTextTool(
+      writerPrompt,
+      "writer",
+      setWriterResult,
+      setWriterLoading,
+      setWriterError
+    );
+  }
+
+  function runAssistant() {
+    runTextTool(
+      assistantPrompt,
+      "assistant",
+      setAssistantResult,
+      setAssistantLoading,
+      setAssistantError
+    );
+  }
+
+
+  async function generateImage() {
+    if (!imagePrompt.trim()) {
+      setImageError("Please enter an image prompt.");
+      return;
+    }
+
+    setImageLoading(true);
+    setImageError("");
+    setGeneratedImage(null);
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: imagePrompt,
+          type: "image",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.data) {
+        throw new Error(result.error || "Image generation failed.");
+      }
+
+      setGeneratedImage(
+        `data:${result.mimeType || "image/png"};base64,${result.data}`
+      );
+    } catch (error) {
+      setImageError(error.message || "Image generation failed.");
+    } finally {
+      setImageLoading(false);
+    }
+  }
+
+  return (
+    <main className="portal">
+
+      <header className="site-header">
+
+        <div className="topbar">
+          <div className="container topbar-inner">
+            <span>🌐 GoogleAi Global Portal</span>
+            <LiveClock />
+          </div>
+        </div>
+
+        <div className="container brand-row">
+
+          <Link href="/" className="logo">
+            Google<span>Ai</span>
+          </Link>
+
+          <div className="search">
+            <input placeholder="Search GoogleAi, Shopping, News..." />
+            <button>Search</button>
+          </div>
+
+        </div>
+
+        <nav className="nav">
+          <div className="container nav-inner">
+            {nav.map(([label, href]) => (
+              <Link href={href} key={label}>
+                {label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+
+      </header>
+
+      <div className="container">
+
+        <div className="ad-box">
+          ADVERTISEMENT
+        </div>
+
+        <section className="breaking">
+          <strong>🔴 BREAKING</strong>
+          <div className="breaking-scroll">
+            {news.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </section>
+
+        <section className="marketplace section">
+
+          <div className="section-title">
+            <div>
+              <h2>🛒 Shopping Marketplace</h2>
+              <p className="section-subtitle">
+                Buy, sell and discover products and services.
+              </p>
+            </div>
+
+            <Link href="/shopping">
+              View Marketplace →
+            </Link>
+          </div>
+
+          <div className="market-grid">
+
+            <Link href="/mobiles">
+              <strong>📱</strong>
+              <span>Mobile Phones</span>
+            </Link>
+
+            <Link href="/electronics">
+              <strong>💻</strong>
+              <span>Electronics</span>
+            </Link>
+
+            <Link href="/garments">
+              <strong>👕</strong>
+              <span>Garments</span>
+            </Link>
+
+            <Link href="/jobs">
+              <strong>💼</strong>
+              <span>Jobs</span>
+            </Link>
+
+            <Link href="/shopping?category=vehicles">
+              <strong>🚗</strong>
+              <span>Vehicles</span>
+            </Link>
+
+            <Link href="/shopping?category=property">
+              <strong>🏠</strong>
+              <span>Property</span>
+            </Link>
+
+            <Link href="/shopping?category=services">
+              <strong>🛠️</strong>
+              <span>Services</span>
+            </Link>
+
+            <Link href="/shopping?category=all">
+              <strong>➕</strong>
+              <span>View All</span>
+            </Link>
+
+          </div>
+
+        </section>
+
+        <section className="hero-grid">
+
+          <article className="lead-card">
+
+            <div className="placeholder-image hero-3d">
+              <div className="hero-orb orb-1"></div>
+              <div className="hero-orb orb-2"></div>
+              <div className="hero-orb orb-3"></div>
+
+              <div className="hero-3d-content">
+                <div className="hero-icon">🤖</div>
+                <strong>GoogleAi</strong>
+                <span>AI • NEWS • GLOBAL</span>
+              </div>
+            </div>
+
+            <span className="category">
+              LATEST NEWS
+            </span>
+
+            <h1>{news[0]}</h1>
+
+            <p>
+              GoogleAi پر پاکستان اور دنیا بھر کی تازہ ترین خبریں،
+              معلومات، AI، کاروبار اور ٹیکنالوجی اپڈیٹس پڑھیں۔
+            </p>
+
+            <Link
+              href="/category/Latest"
+              className="read-more"
+            >
+              Read More →
+            </Link>
+
+          </article>
+
+          <div className="side-news">
+
+            {news.slice(1).map((item, index) => (
+
+              <article className="news-card" key={item}>
+
+                <div className="thumb">
+                  {["🔥", "🌍", "🤖"][index]}
+                </div>
+
+                <div>
+                  <small>Live Update</small>
+
+                  <h2>{item}</h2>
+
+                  <Link href="/category/Latest">
+                    Read →
+                  </Link>
+                </div>
+
+              </article>
+
+            ))}
+
+          </div>
+
+        </section>
+
+        <section className="section">
+
+          <div className="section-title">
+            <h2>👕 Garment Marketing</h2>
+
+            <Link href="/garments">
+              View Garments →
+            </Link>
+          </div>
+
+          <div className="garment-grid">
+
+            <article className="product-card">
+              <div className="product-image">👕</div>
+              <span>Featured Product</span>
+              <h3>Premium Fashion Collection</h3>
+              <p>Online garment marketing and promotion.</p>
+              <button>View Product →</button>
+            </article>
+
+            <article className="product-card">
+              <div className="product-image">👗</div>
+              <span>New Collection</span>
+              <h3>Latest Fashion Designs</h3>
+              <p>Promote your garments to online customers.</p>
+              <button>View Product →</button>
+            </article>
+
+            <article className="product-card">
+              <div className="product-image">🧥</div>
+              <span>Popular</span>
+              <h3>Fashion & Clothing</h3>
+              <p>Products can be promoted on GoogleAi.</p>
+              <button>View Product →</button>
+            </article>
+
+          </div>
+
+        </section>
+
+        <div className="ad-box">
+          ADVERTISEMENT
+        </div>
+
+        <section className="section">
+
+          <div className="section-title">
+            <h2>🌍 Global Live TV</h2>
+            <Link href="/tv">View All →</Link>
+          </div>
+
+          <div className="feature-grid">
+
+            <Link href="/tv?country=Pakistan">
+              🇵🇰 Pakistan TV
+            </Link>
+
+            <Link href="/tv?country=United%20Kingdom">
+              🇬🇧 UK TV
+            </Link>
+
+            <Link href="/tv?country=United%20States">
+              🇺🇸 USA TV
+            </Link>
+
+            <Link href="/tv?region=Europe">
+              🇪🇺 Europe TV
+            </Link>
+
+          </div>
+
+        </section>
+
+        <section className="section" id="features">
+
+          <div className="section-title">
+
+            <h2>🤖 AI Tools</h2>
+
+            <Link href="/#studio">
+              Explore All →
+            </Link>
+
+          </div>
+
+          <div className="tool-grid">
+
+            <Link href="/#studio">
+              💬 AI Chat
+            </Link>
+
+            <div className="ai-image-generator" id="studio">
+              <h3>🎨 AI Image Generator</h3>
+
+              <textarea
+                value={imagePrompt}
+                onChange={(e) => setImagePrompt(e.target.value)}
+                placeholder="Describe the image you want..."
+                rows={4}
+              />
+
+              <button
+                type="button"
+                onClick={generateImage}
+                disabled={imageLoading}
+              >
+                {imageLoading ? "⏳ Generating..." : "✨ Generate Image"}
+              </button>
+
+              {imageError && (
+                <p style={{ color: "#ef4444" }}>{imageError}</p>
+              )}
+
+              {generatedImage && (
+                <div className="generated-image">
+                  <img
+                    src={generatedImage}
+                    alt="AI generated image"
+                    style={{
+                      width: "100%",
+                      maxWidth: "1024px",
+                      borderRadius: "12px",
+                      marginTop: "15px",
+                    }}
+                  />
+
+                  <a
+                    href={generatedImage}
+                    download="googleai-generated-image.jpg"
+                    style={{
+                      display: "inline-block",
+                      marginTop: "12px",
+                    }}
+                  >
+                    ⬇️ Download Image
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <div className="ai-text-tool">
+              <h3>✍️ AI Writer</h3>
+
+              <textarea
+                value={writerPrompt}
+                onChange={(e) => setWriterPrompt(e.target.value)}
+                placeholder="What should I write for you?"
+                rows={4}
+              />
+
+              <button
+                type="button"
+                onClick={generateWriter}
+                disabled={writerLoading}
+              >
+                {writerLoading ? "⏳ Writing..." : "✍️ Generate"}
+              </button>
+
+              {writerError && (
+                <p className="ai-error">{writerError}</p>
+              )}
+
+              {writerResult && (
+                <div className="ai-result">
+                  {writerResult}
+                </div>
+              )}
+            </div>
+
+            <div className="ai-text-tool">
+              <h3>🔍 AI Assistant</h3>
+
+              <textarea
+                value={assistantPrompt}
+                onChange={(e) => setAssistantPrompt(e.target.value)}
+                placeholder="Ask AI anything..."
+                rows={4}
+              />
+
+              <button
+                type="button"
+                onClick={runAssistant}
+                disabled={assistantLoading}
+              >
+                {assistantLoading ? "⏳ Thinking..." : "🔍 Ask Assistant"}
+              </button>
+
+              {assistantError && (
+                <p className="ai-error">{assistantError}</p>
+              )}
+
+              {assistantResult && (
+                <div className="ai-result">
+                  {assistantResult}
+                </div>
+              )}
+            </div>
+
+          </div>
+
+        </section>
+
+        <section className="section">
+
+          <div className="section-title">
+
+            <h2>📰 Live News Headlines</h2>
+
+            <Link href="/category/Latest">
+              More News →
+            </Link>
+
+          </div>
+
+          <div className="latest-list">
+
+            {news.map((item, i) => (
+
+              <article key={item}>
+
+                <span>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+
+                <div>
+
+                  <h3>{item}</h3>
+
+                  <small>
+                    GoogleAi News • Live Update
+                  </small>
+
+                </div>
+
+              </article>
+
+            ))}
+
+          </div>
+
+        </section>
+
+        <section className="section" id="studio">
+
+          <div className="studio">
+
+            <span>GOOGLEAI STUDIO</span>
+
+            <h2>
+              Create with Artificial Intelligence
+            </h2>
+
+            <p>
+              Chat, write, create images and explore AI
+              tools from one professional workspace.
+            </p>
+
+            <Link href="/#features">
+              Open AI Studio →
+            </Link>
+
+          </div>
+
+        </section>
+
+        <div className="ad-box">
+          ADVERTISEMENT
+        </div>
+
+      </div>
+
+      <footer>
+
+        <div className="container footer-grid">
+
+          <div>
+
+            <h2>GoogleAi</h2>
+
+            <p>
+              News, AI, technology, shopping and
+              global information portal.
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3>Shopping</h3>
+
+            <Link href="/shopping">Marketplace</Link>
+            <Link href="/mobiles">Mobiles</Link>
+            <Link href="/electronics">Electronics</Link>
+            <Link href="/garments">Garments</Link>
+            <Link href="/jobs">Jobs</Link>
+
+          </div>
+
+          <div>
+
+            <h3>Explore</h3>
+
+            <Link href="/category/Latest">News</Link>
+            <Link href="/tv">Live TV</Link>
+            <Link href="/#features">AI Tools</Link>
+
+          </div>
+
+          <div>
+
+            <h3>Information</h3>
+
+            <Link href="/about">About</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+
+          </div>
+
+        </div>
+
+        <div className="copyright">
+          © 2026 GoogleAi. All rights reserved.
+        </div>
+
+      </footer>
+
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            function updateGoogleAiClock() {
+              const now = new Date();
+
+              const clock =
+                document.getElementById("live-clock");
+
+              const date =
+                document.getElementById("live-date");
+
+              const hijri =
+                document.getElementById("hijri-date");
+
+              if (clock) {
+                clock.textContent =
+                  now.toLocaleTimeString();
+              }
+
+              if (date) {
+                date.textContent =
+                  now.toLocaleDateString(
+                    undefined,
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric"
+                    }
+                  );
+              }
+
+              if (hijri) {
+                try {
+                  hijri.textContent =
+                    new Intl.DateTimeFormat(
+                      "en-TN-u-ca-islamic",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                      }
+                    ).format(now);
+                } catch {
+                  hijri.textContent = "Hijri";
+                }
+              }
+            }
+
+            updateGoogleAiClock();
+            setInterval(updateGoogleAiClock, 1000);
+          `
+        }}
+      />
+
+    </main>
+  );
+}

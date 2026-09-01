@@ -1,0 +1,105 @@
+{
+  "logo": {
+    "url": "",
+    "title": "GoogleAi"
+  },
+  "links": [],
+  "videos": [],
+  "sidebar": [
+    [
+      "🏠",
+      "Home",
+      "/"
+    ],
+    [
+      "🎨",
+      "AI Images",
+      "/#studio"
+    ],
+    [
+      "✍️",
+      "AI Writer",
+      "/#studio"
+    ],
+    [
+      "💬",
+      "AI Chat",
+      "/#studio"
+    ],
+    [
+      "📰",
+      "Latest News",
+      "/category/Latest"
+    ],
+    [
+      "🏢",
+      "Business",
+      "/category/Business"
+    ],
+    [
+      "🏏",
+      "Cricket",
+      "/cricket"
+    ],
+    [
+      "🛒",
+      "Shopping",
+      "/shopping"
+    ],
+    [
+      "📱",
+      "Mobiles",
+      "/mobiles"
+    ],
+    [
+      "💻",
+      "Electronics",
+      "/electronics"
+    ],
+    [
+      "💼",
+      "Jobs",
+      "/jobs"
+    ],
+    [
+      "📺",
+      "Live TV",
+      "/tv"
+    ],
+    [
+      "🎬",
+      "Videos",
+      "/videos"
+    ],
+    [
+      "📝",
+      "Articles",
+      "/articles"
+    ],
+    [
+      "🍳",
+      "Recipes",
+      "/recipes"
+    ],
+    [
+      "☪️",
+      "Islam",
+      "/islam"
+    ],
+    [
+      "📌",
+      "New Menu",
+      "/new-page"
+    ],
+    [
+      "📌",
+      "New Menu",
+      "/new-page"
+    ]
+  ],
+  "follow": {
+    "email": "",
+    "facebook": "",
+    "whatsapp": ""
+  }
+}

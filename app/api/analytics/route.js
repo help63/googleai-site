@@ -1,31 +1,16 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import fs from "fs/promises";
-import path from "path";
+import { neon } from "@neondatabase/serverless";
 
-const file = path.join(process.cwd(), "data", "analytics.json");
-
-async function readData() {
-  try {
-    return JSON.parse(await fs.readFile(file, "utf8"));
-  } catch {
-    return {
-      totalViews: 0,
-      visitors: {},
-      countries: {},
-      pages: {},
-      recent: []
-    };
-  }
-}
-
-async function writeData(data) {
-  await fs.writeFile(file, JSON.stringify(data, null, 2));
-}
+const sql = neon(process.env.DATABASE_URL);
 
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
+
+    const page = body.page || "/";
+    const visitorId = body.visitorId || "anonymous";
+
     const headers = request.headers;
 
     const country =
@@ -33,49 +18,14 @@ export async function POST(request) {
       headers.get("x-vercel-ip-country-code") ||
       "Unknown";
 
-    const page = body.page || "/";
-    const visitorId = body.visitorId || "anonymous";
+    await sql`
+      INSERT INTO analytics_events
+        (visitor_id, country, page)
+      VALUES
+        (${visitorId}, ${country}, ${page})
+    `;
 
-    const data = await readData();
-
-    data.totalViews += 1;
-
-    if (!data.countries[country]) {
-      data.countries[country] = 0;
-    }
-
-    data.countries[country] += 1;
-
-    if (!data.pages[page]) {
-      data.pages[page] = 0;
-    }
-
-    data.pages[page] += 1;
-
-    if (!data.visitors[visitorId]) {
-      data.visitors[visitorId] = {
-        country,
-        firstSeen: new Date().toISOString(),
-        views: 0
-      };
-    }
-
-    data.visitors[visitorId].views += 1;
-    data.visitors[visitorId].lastSeen = new Date().toISOString();
-
-    data.recent.unshift({
-      country,
-      page,
-      time: new Date().toISOString()
-    });
-
-    data.recent = data.recent.slice(0, 100);
-
-    await writeData(data);
-
-    return NextResponse.json({
-      success: true
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Analytics error:", error);
 
@@ -87,38 +37,90 @@ export async function POST(request) {
 }
 
 export async function GET() {
-  const cookieStore = await cookies();
+  try {
+    const cookieStore = await cookies();
 
-  if (cookieStore.get("admin_session")?.value !== "authenticated") {
+    if (
+      cookieStore.get("admin_session")?.value !==
+      "authenticated"
+    ) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const totalResult = await sql`
+      SELECT COUNT(*)::int AS total_views
+      FROM analytics_events
+    `;
+
+    const visitorsResult = await sql`
+      SELECT COUNT(DISTINCT visitor_id)::int AS unique_visitors
+      FROM analytics_events
+    `;
+
+    const countries = await sql`
+      SELECT country, COUNT(*)::int AS views
+      FROM analytics_events
+      GROUP BY country
+      ORDER BY views DESC
+    `;
+
+    const pages = await sql`
+      SELECT page, COUNT(*)::int AS views
+      FROM analytics_events
+      GROUP BY page
+      ORDER BY views DESC
+    `;
+
+    const recent = await sql`
+      SELECT country, page, created_at AS time
+      FROM analytics_events
+      ORDER BY created_at DESC
+      LIMIT 100
+    `;
+
+    const daily = await sql`
+      SELECT DATE(created_at) AS date, COUNT(*)::int AS views
+      FROM analytics_events
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `;
+
+    const weekly = await sql`
+      SELECT DATE_TRUNC('week', created_at)::date AS week, COUNT(*)::int AS views
+      FROM analytics_events
+      WHERE created_at >= NOW() - INTERVAL '12 weeks'
+      GROUP BY DATE_TRUNC('week', created_at)
+      ORDER BY week ASC
+    `;
+
+    const monthly = await sql`
+      SELECT DATE_TRUNC('month', created_at)::date AS month, COUNT(*)::int AS views
+      FROM analytics_events
+      WHERE created_at >= NOW() - INTERVAL '12 months'
+      GROUP BY DATE_TRUNC('month', created_at)
+      ORDER BY month ASC
+    `;
+
+    return NextResponse.json({
+      totalViews: totalResult[0]?.total_views || 0,
+      uniqueVisitors: visitorsResult[0]?.unique_visitors || 0,
+      countries,
+      pages,
+      recent,
+      daily,
+      weekly,
+      monthly
+    });
+  } catch (error) {
+    console.error("Analytics GET error:", error);
+
     return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
+      { error: "Analytics failed." },
+      { status: 500 }
     );
   }
-
-  const data = await readData();
-
-  const countries = Object.entries(data.countries)
-    .map(([country, views]) => ({
-      country,
-      views
-    }))
-    .sort((a, b) => b.views - a.views);
-
-  const pages = Object.entries(data.pages)
-    .map(([page, views]) => ({
-      page,
-      views
-    }))
-    .sort((a, b) => b.views - a.views);
-
-  const uniqueVisitors = Object.keys(data.visitors).length;
-
-  return NextResponse.json({
-    totalViews: data.totalViews,
-    uniqueVisitors,
-    countries,
-    pages,
-    recent: data.recent
-  });
 }

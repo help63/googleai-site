@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 export default function AdminLogin() {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -13,7 +14,7 @@ export default function AdminLogin() {
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ username, password }),
     });
 
     const data = await res.json();
@@ -41,6 +42,20 @@ export default function AdminLogin() {
         background: "#151b2e"
       }}>
         <h1>Admin Login</h1>
+
+        <input
+          type="text"
+          placeholder="Admin username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+          style={{
+            width: "100%",
+            padding: 12,
+            margin: "15px 0",
+            boxSizing: "border-box"
+          }}
+        />
 
         <input
           type="password"

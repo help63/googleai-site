@@ -1,7 +1,10 @@
 import Link from "next/link";
+import AdManager from "../components/AdManager";
 
 export default function Page() {
   return (
+    <>
+      <AdManager provider="Google AdSense" slot="travel-top" />
     <main className="portal">
       <section className="section page-placeholder">
         <span className="category">GOOGLEAI</span>
@@ -16,5 +19,6 @@ export default function Page() {
         </Link>
       </section>
     </main>
+    </>
   );
 }

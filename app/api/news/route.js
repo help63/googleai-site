@@ -1,107 +1,107 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
 
 const file = path.join(process.cwd(), "data", "news.json");
 
-async function readNews() {
+function authorized(req) {
+  return req.cookies.get("admin_session")?.value === "authenticated";
+}
+
+export async function GET() {
   try {
-    return JSON.parse(await fs.readFile(file, "utf8"));
+    const data = JSON.parse(await fs.readFile(file, "utf8"));
+    return NextResponse.json(data);
   } catch {
-    return [];
+    return NextResponse.json([]);
   }
 }
 
-async function writeNews(news) {
-  await fs.writeFile(file, JSON.stringify(news, null, 2));
-}
-
-function slugify(text) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
-
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get("category");
-  const q = searchParams.get("q");
-
-  let news = await readNews();
-
-  if (category && category !== "Latest") {
-    news = news.filter(
-      (item) => item.category?.toLowerCase() === category.toLowerCase()
-    );
-  }
-
-  if (q) {
-    const query = q.toLowerCase();
-    news = news.filter(
-      (item) =>
-        item.title?.toLowerCase().includes(query) ||
-        item.excerpt?.toLowerCase().includes(query)
-    );
-  }
-
-  return NextResponse.json(news);
-}
-
-export async function POST(request) {
-  const cookieStore = await cookies();
-
-  if (cookieStore.get("admin_session")?.value !== "authenticated") {
+export async function POST(req) {
+  if (!authorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  try {
+    const body = await req.json();
+    let news = [];
 
-  if (!body.title?.trim()) {
+    try {
+      news = JSON.parse(await fs.readFile(file, "utf8"));
+    } catch {}
+
+    const item = {
+      slug: body.slug,
+      title: body.title,
+      excerpt: body.excerpt || "",
+      category: body.category || "AI",
+      author: body.author || "GoogleAi Team",
+      createdAt: body.createdAt || new Date().toISOString(),
+      image: body.image || "",
+      content: body.content || body.excerpt || ""
+    };
+
+    news.unshift(item);
+
+    await fs.writeFile(file, JSON.stringify(news, null, 2));
+
+    return NextResponse.json({ success: true, news: item });
+  } catch (error) {
     return NextResponse.json(
-      { error: "Title is required." },
-      { status: 400 }
+      { error: String(error) },
+      { status: 500 }
     );
   }
-
-  const news = await readNews();
-
-  const article = {
-    id: crypto.randomUUID(),
-    title: body.title.trim(),
-    slug: `${slugify(body.title)}-${Date.now()}`,
-    excerpt: body.excerpt?.trim() || "",
-    content: body.content?.trim() || "",
-    category: body.category || "Latest",
-    image: body.image?.trim() || "",
-    author: body.author?.trim() || "GoogleAI News",
-    breaking: Boolean(body.breaking),
-    featured: Boolean(body.featured),
-    views: 0,
-    createdAt: new Date().toISOString()
-  };
-
-  news.unshift(article);
-  await writeNews(news);
-
-  return NextResponse.json(article, { status: 201 });
 }
 
-export async function DELETE(request) {
-  const cookieStore = await cookies();
-
-  if (cookieStore.get("admin_session")?.value !== "authenticated") {
+export async function PUT(req) {
+  if (!authorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = await request.json();
-  const news = await readNews();
-  const updated = news.filter((item) => item.id !== id);
+  try {
+    const body = await req.json();
+    let news = JSON.parse(await fs.readFile(file, "utf8"));
 
-  await writeNews(updated);
+    news = news.map((item) =>
+      item.slug === body.slug
+        ? {
+            ...item,
+            ...body,
+            slug: item.slug
+          }
+        : item
+    );
 
-  return NextResponse.json({ success: true });
+    await fs.writeFile(file, JSON.stringify(news, null, 2));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { error: String(error) },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req) {
+  if (!authorized(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { slug } = await req.json();
+
+    let news = JSON.parse(await fs.readFile(file, "utf8"));
+    news = news.filter((item) => item.slug !== slug);
+
+    await fs.writeFile(file, JSON.stringify(news, null, 2));
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json(
+      { error: "Delete failed" },
+      { status: 500 }
+    );
+  }
 }

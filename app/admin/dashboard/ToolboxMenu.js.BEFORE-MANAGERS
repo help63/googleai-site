@@ -1,0 +1,149 @@
+"use client";
+
+import { useState } from "react";
+
+const menu = [
+  ["🏠","Home"],
+  ["🖼️","Logo"],
+  ["🔗","Links"],
+  ["🎬","Videos"],
+  ["📰","News"],
+  ["🤖","AI Tools"],
+  ["🛒","Shopping"],
+  ["📱","Mobiles"],
+  ["💻","Electronics"],
+  ["💼","Jobs"],
+  ["👕","Garments"],
+  ["🏏","Cricket"],
+  ["📺","Live TV"],
+  ["📝","Articles"],
+  ["🍳","Recipes"],
+  ["✈️","Travel"],
+  ["☪️","Islam"],
+  ["⚙️","Settings"],
+];
+
+export default function ToolboxMenu() {
+  const [active, setActive] = useState("Home");
+
+  return (
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "230px 1fr",
+      gap: 22,
+      marginTop: 30
+    }}>
+      <aside style={{
+        background: "linear-gradient(180deg,#111827,#312e81)",
+        borderRadius: 22,
+        padding: 16,
+        boxShadow: "0 20px 50px rgba(0,0,0,.3)",
+        height: "fit-content"
+      }}>
+        <div style={{
+          fontSize: 22,
+          fontWeight: 900,
+          padding: "12px 10px 18px",
+          borderBottom: "1px solid rgba(255,255,255,.12)"
+        }}>
+          🧰 Admin Tools
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          {menu.map(([icon, name]) => (
+            <button
+              key={name}
+              onClick={() => setActive(name)}
+              style={{
+                width: "100%",
+                border: 0,
+                borderRadius: 12,
+                padding: "12px 10px",
+                marginBottom: 6,
+                cursor: "pointer",
+                color: "#fff",
+                textAlign: "left",
+                fontSize: 15,
+                fontWeight: active === name ? 800 : 500,
+                background:
+                  active === name
+                    ? "linear-gradient(90deg,#ec4899,#7c3aed)"
+                    : "transparent"
+              }}
+            >
+              <span style={{ fontSize: 20, marginRight: 10 }}>
+                {icon}
+              </span>
+              {name}
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <section style={{
+        minHeight: 420,
+        borderRadius: 22,
+        padding: 28,
+        background: "linear-gradient(145deg,#111827,#1e293b)",
+        border: "1px solid rgba(255,255,255,.12)",
+        boxShadow: "0 20px 50px rgba(0,0,0,.25)"
+      }}>
+        <div style={{
+          fontSize: 32,
+          fontWeight: 900
+        }}>
+          {menu.find(x => x[1] === active)?.[0]} {active}
+        </div>
+
+        <p style={{
+          color: "#94a3b8",
+          marginTop: 8
+        }}>
+          Admin-only control panel
+        </p>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+          gap: 16,
+          marginTop: 28
+        }}>
+          <div className="admin-stat">
+            <h3>✏️ Edit</h3>
+            <p>Change website content.</p>
+          </div>
+
+          <div className="admin-stat">
+            <h3>🔗 Links</h3>
+            <p>Add or update links.</p>
+          </div>
+
+          <div className="admin-stat">
+            <h3>💾 Save</h3>
+            <p>Save your changes.</p>
+          </div>
+
+          <div className="admin-stat">
+            <h3>👑 Admin Only</h3>
+            <p>Visible only inside admin.</p>
+          </div>
+        </div>
+
+        <div style={{
+          marginTop: 30,
+          padding: 20,
+          borderRadius: 18,
+          background: "linear-gradient(135deg,#7c3aed,#ec4899)",
+          boxShadow: "0 15px 40px rgba(124,58,237,.25)"
+        }}>
+          <h3 style={{marginTop:0}}>
+            ✨ {active} Manager
+          </h3>
+          <p style={{opacity:.9}}>
+            The editing controls for this section will appear here.
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}

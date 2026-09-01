@@ -1,0 +1,101 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+export default async function AdminTools() {
+  const cookieStore = await cookies();
+
+  if (cookieStore.get("admin_session")?.value !== "authenticated") {
+    redirect("/admin");
+  }
+
+  return (
+    <main style={{
+      minHeight: "100vh",
+      padding: "30px 20px",
+      background: "#070b18",
+      color: "white",
+      fontFamily: "Arial, sans-serif"
+    }}>
+      <div style={{ maxWidth: 1200, margin: "auto" }}>
+        <a
+          href="/admin/dashboard"
+          style={{ color: "#60a5fa", textDecoration: "none" }}
+        >
+          ← Dashboard
+        </a>
+
+        <h1 style={{
+          fontSize: "clamp(32px,5vw,54px)",
+          margin: "20px 0 8px"
+        }}>
+          🧰 Website Toolbox
+        </h1>
+
+        <p style={{ color: "#94a3b8" }}>
+          Full WordPress-style website management
+        </p>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))",
+          gap: 18,
+          marginTop: 30
+        }}>
+          {[
+            ["🏠", "Home", "Manage homepage sections"],
+            ["🔗", "Menus & Links", "Add, edit and remove links"],
+            ["🎬", "Videos", "Manage video content"],
+            ["📰", "News", "Create and edit news"],
+            ["📺", "Live TV", "Manage TV channels"],
+            ["🤖", "AI Tools", "Manage AI tools"],
+            ["🛒", "Shopping", "Manage shopping sections"],
+            ["💼", "Jobs", "Manage jobs"],
+            ["🎨", "Design", "Manage toolbox appearance"],
+            ["⚙️", "Settings", "Website settings"]
+          ].map(([icon, title, text]) => (
+            <div
+              key={title}
+              style={{
+                padding: 24,
+                minHeight: 145,
+                borderRadius: 22,
+                background: "linear-gradient(145deg,#172554,#312e81)",
+                border: "1px solid rgba(255,255,255,.12)",
+                boxShadow: "0 15px 40px rgba(0,0,0,.25)"
+              }}
+            >
+              <div style={{ fontSize: 40 }}>{icon}</div>
+              <h2 style={{ margin: "10px 0 6px" }}>{title}</h2>
+              <p style={{ color: "#cbd5e1", margin: 0 }}>{text}</p>
+              <button
+                style={{
+                  marginTop: 15,
+                  padding: "9px 14px",
+                  border: 0,
+                  borderRadius: 10,
+                  cursor: "pointer"
+                }}
+              >
+                Manage
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div style={{
+          marginTop: 35,
+          padding: 24,
+          borderRadius: 20,
+          background: "#111827",
+          border: "1px solid #263244"
+        }}>
+          <h2>🔒 Admin Only</h2>
+          <p style={{ color: "#94a3b8" }}>
+            This area is protected by the existing admin session.
+            Visitors cannot access the dashboard without admin login.
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}

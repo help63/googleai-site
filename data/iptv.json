@@ -1,0 +1,11 @@
+[
+  {
+    "id": "aab8f8bd-f92b-4a53-96fc-cdfbc9b87ee6",
+    "name": "Test TV",
+    "logo": "",
+    "streamUrl": "https://example.com/test.m3u8",
+    "category": "General",
+    "enabled": true,
+    "createdAt": "2026-08-31T08:55:28.550Z"
+  }
+]

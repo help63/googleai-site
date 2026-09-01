@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "slug": "google-ai-new-update",
+    "title": "Google AI New Update Released",
+    "excerpt": "Google has introduced new AI features and improvements.",
+    "category": "AI",
+    "author": "GoogleAi Team",
+    "createdAt": "2026-08-31",
+    "image": ""
+  },
+  {
+    "slug": "future-of-ai-tools",
+    "title": "Future of AI Tools",
+    "excerpt": "Explore how AI tools are changing technology and daily work.",
+    "category": "Technology",
+    "author": "GoogleAi Team",
+    "createdAt": "2026-08-31",
+    "image": ""
+  },
+  {
+    "slug": "smartphones-ai-era",
+    "title": "Smartphones Enter AI Era",
+    "excerpt": "New smartphones are getting smarter with built-in AI features.",
+    "category": "Mobiles",
+    "author": "GoogleAi Team",
+    "createdAt": "2026-08-31",
+    "image": ""
+  }
+]

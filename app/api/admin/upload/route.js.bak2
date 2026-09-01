@@ -1,0 +1,126 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import fs from "fs/promises";
+import path from "path";
+import crypto from "crypto";
+
+const TYPES = {
+  game: "games",
+  movie: "movies",
+  apk: "apk",
+  file: "files",
+};
+
+export async function POST(request) {
+  const cookieStore = await cookies();
+
+  if (cookieStore.get("admin_session")?.value !== "authenticated") {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Admin login required." },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const formData = await request.formData();
+
+    const type = String(formData.get("type") || "file").toLowerCase();
+    const title = String(formData.get("title") || "").trim();
+    const description = String(formData.get("description") || "").trim();
+    const file = formData.get("file");
+
+    if (!title) {
+      return NextResponse.json(
+        { success: false, error: "Title is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!file || typeof file.arrayBuffer !== "function") {
+      return NextResponse.json(
+        { success: false, error: "File is required" },
+        { status: 400 }
+      );
+    }
+
+    const folder = TYPES[type] || TYPES.file;
+
+    const safeTitle = title
+      .replace(/[^a-zA-Z0-9-_ ]/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .slice(0, 80) || "download";
+
+    const ext = path.extname(file.name || "");
+    const filename =
+      `${safeTitle}-${Date.now()}-${crypto.randomBytes(5).toString("hex")}${ext}`;
+
+    const uploadDir = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      folder
+    );
+
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    await fs.writeFile(
+      path.join(uploadDir, filename),
+      buffer
+    );
+
+    const item = {
+      id: crypto.randomUUID(),
+      type,
+      title,
+      description,
+      originalName: file.name,
+      filename,
+      size: file.size,
+      mimeType: file.type,
+      downloadUrl: `/uploads/${folder}/${filename}`,
+      createdAt: new Date().toISOString(),
+    };
+
+    const dataFile = path.join(
+      process.cwd(),
+      "data",
+      "content.json"
+    );
+
+    let content = [];
+
+    try {
+      content = JSON.parse(
+        await fs.readFile(dataFile, "utf8")
+      );
+    } catch {
+      content = [];
+    }
+
+    content.unshift(item);
+
+    await fs.writeFile(
+      dataFile,
+      JSON.stringify(content, null, 2)
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: "Content uploaded successfully",
+      item,
+    });
+  } catch (error) {
+    console.error("ADMIN UPLOAD ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Upload failed",
+      },
+      { status: 500 }
+    );
+  }
+}

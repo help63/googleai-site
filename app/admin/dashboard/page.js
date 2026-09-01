@@ -1,12 +1,11 @@
-import { cookies } from "next/headers";
+import { isAdminAuthenticated } from "../../../lib/admin-auth";
 import { redirect } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 import NewsManager from "./NewsManager";
+import ToolboxMenu from "./ToolboxMenu";
 
 export default async function Dashboard() {
-  const cookieStore = await cookies();
-
-  if (cookieStore.get("admin_session")?.value !== "authenticated") {
+  if (!(await isAdminAuthenticated())) {
     redirect("/admin");
   }
 
@@ -65,11 +64,49 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        <div style={{ marginTop: 30 }}>
+
+          <div style={{ marginTop: 25, marginBottom: 20 }}>
+            <a
+              href="/admin/dashboard/tools"
+              style={{
+                display: "inline-block",
+                padding: "14px 22px",
+                borderRadius: 12,
+                background: "linear-gradient(135deg,#ec4899,#7c3aed,#2563eb)",
+                color: "white",
+                textDecoration: "none",
+                fontWeight: 800,
+                boxShadow: "0 10px 30px rgba(124,58,237,.35)"
+              }}
+            >
+              🧰 Open Full Website Toolbox
+            </a>
+          </div>
+
+<div style={{ marginTop: 30 }}>
           <NewsManager />
         </div>
 
-        <div style={{ marginTop: 25 }}>
+
+          <div style={{ marginTop: 25 }}>
+            <a
+              href="/admin/dashboard/site-editor"
+              style={{
+                display: "inline-block",
+                padding: "13px 20px",
+                background: "linear-gradient(135deg,#ec4899,#7c3aed,#06b6d4)",
+                color: "white",
+                borderRadius: 12,
+                textDecoration: "none",
+                fontWeight: 800,
+                boxShadow: "0 12px 30px rgba(0,0,0,.25)"
+              }}
+            >
+              🎨 Full Website Editor
+            </a>
+          </div>
+
+<div style={{ marginTop: 25 }}>
           <a
             href="/admin/dashboard/tv"
             style={{

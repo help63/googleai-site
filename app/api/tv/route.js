@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
+import crypto from "crypto";
 
 const file = path.join(process.cwd(), "data", "tv-channels.json");
 

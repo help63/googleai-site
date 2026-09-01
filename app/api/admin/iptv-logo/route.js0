@@ -1,0 +1,70 @@
+cd ~/googleai-site
+
+mkdir -p app/api/admin/iptv-logo
+
+cat > app/api/admin/iptv-logo/route.js <<'EOF'
+import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
+import fs from "fs/promises";
+import path from "path";
+import crypto from "crypto";
+
+export async function POST(request) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file");
+
+    if (!file || typeof file.arrayBuffer !== "function") {
+      return NextResponse.json(
+        { success: false, error: "Logo file required" },
+        { status: 400 }
+      );
+    }
+
+    const ext = path.extname(file.name || ".png");
+
+    const filename =
+      "iptv-logo-" +
+      Date.now() +
+      "-" +
+      crypto.randomBytes(4).toString("hex") +
+      ext;
+
+    const folder = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      "iptv"
+    );
+
+    await fs.mkdir(folder, { recursive: true });
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    await fs.writeFile(
+      path.join(folder, filename),
+      buffer
+    );
+
+    return NextResponse.json({
+      success: true,
+      url: `/uploads/iptv/${filename}`,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { success: false, error: "Upload failed" },
+      { status: 500 }
+    );
+  }
+}
+EOF
