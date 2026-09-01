@@ -14,7 +14,7 @@ const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
 async function getMenu() {
   try {
-    const file = path.join(process.cwd(), "data", "menu.json");
+    const file = path.join(process.cwd(), "data", "content-types.json");
     const menu = JSON.parse(await fs.readFile(file, "utf8"));
     return menu.filter(item => item.enabled);
   } catch {
@@ -31,7 +31,7 @@ export default async function RootLayout({ children }) {
         <nav>
           {menu.map((item) => (
             <Link key={item.url} href={item.url}>
-              {item.title}
+              {item.name}
             </Link>
           ))}
         </nav>

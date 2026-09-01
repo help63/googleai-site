@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Articles",
+    "slug": "articles",
+    "url": "/articles",
+    "enabled": true
+  },
+  {
+    "name": "News",
+    "slug": "news",
+    "url": "/news",
+    "enabled": true
+  },
+  {
+    "name": "Videos",
+    "slug": "videos",
+    "url": "/videos",
+    "enabled": true
+  },
+  {
+    "name": "Guest Posts",
+    "slug": "guest-posts",
+    "url": "/guest-posts",
+    "enabled": true
+  },
+  {
+    "name": "Social Posts",
+    "slug": "social",
+    "url": "/social",
+    "enabled": true
+  }
+]
