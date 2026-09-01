@@ -167,6 +167,26 @@ export default async function ArticlePage({ params }) {
           <li>Practical explanations</li>
         </ul>
 
+        <h2>Related Articles</h2>
+
+        <ul>
+          <li>
+            <Link href="/articles/future-of-artificial-intelligence-2026">
+              Future of Artificial Intelligence 2026
+            </Link>
+          </li>
+          <li>
+            <Link href="/articles/best-ai-tools-guide-2026">
+              Best AI Tools Guide 2026
+            </Link>
+          </li>
+          <li>
+            <Link href="/articles/machine-learning-explained">
+              Machine Learning Explained
+            </Link>
+          </li>
+        </ul>
+
         <h2>Conclusion</h2>
 
         <p>
