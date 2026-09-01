@@ -1,62 +1,44 @@
 import Link from "next/link";
 import fs from "fs/promises";
 import path from "path";
-import AdManager from "../components/AdManager";
-import AdSlot from "../../components/AdSlot";
 
 export const metadata = {
   title: "GoogleAI Technology Articles",
   description:
-    "Read AI, technology and digital resource articles from GoogleAI Editorial Team.",
+    "AI, technology and digital resource articles from GoogleAI Site.",
 };
 
 async function getArticles() {
-  try {
-    const file = path.join(
-      process.cwd(),
-      "data",
-      "articles.json"
-    );
+  const file = path.join(process.cwd(), "data", "articles.json");
 
-    const data = await fs.readFile(file, "utf8");
+  const data = JSON.parse(
+    await fs.readFile(file, "utf8")
+  );
 
-    return JSON.parse(data).filter(
-      (item) => item.published !== false
-    );
-  } catch {
-    return [];
-  }
+  return data.filter(
+    (article) => article.published === true
+  );
 }
 
-export default async function Page() {
+export default async function ArticlesPage() {
   const articles = await getArticles();
 
   return (
-    <>
-      <AdManager provider="Google AdSense" slot="articles-top" />
+    <main className="portal">
+      <section className="section">
 
-      <AdSlot title="Advertisement Top" />
+        <span className="category">
+          GOOGLEAI
+        </span>
 
-      <main className="portal">
-        <section className="section">
+        <h1>GoogleAI Technology Articles</h1>
 
-          <span className="category">
-            GOOGLEAI ARTICLES
-          </span>
+        <p>
+          Explore artificial intelligence, technology
+          guides and digital resources.
+        </p>
 
-          <h1>
-            GoogleAI Technology Articles
-          </h1>
-
-          <p>
-            AI, technology and digital guides
-            published by GoogleAI Editorial Team.
-          </p>
-
-          {articles.length === 0 && (
-            <p>No articles available.</p>
-          )}
-
+        <div>
           {articles.map((article) => (
             <article key={article.id}>
 
@@ -67,32 +49,28 @@ export default async function Page() {
               </h2>
 
               <p>
-                By{" "}
-                <Link href="/author/googleai-team">
-                  {article.author}
-                </Link>
+                Category: {article.category}
+              </p>
+
+              <p>
+                By {article.author}
               </p>
 
               <p>
                 Published: {article.publishedAt}
-                {" | "}
-                Updated: {article.updatedAt}
               </p>
 
               <p>
-                {article.content}
+                {article.content.slice(0, 180)}...
               </p>
 
               <hr />
 
             </article>
           ))}
+        </div>
 
-        </section>
-      </main>
-
-      <AdSlot title="Advertisement Bottom" />
-    </>
+      </section>
+    </main>
   );
 }
-
