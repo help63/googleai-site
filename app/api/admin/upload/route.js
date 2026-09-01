@@ -9,6 +9,7 @@ const TYPES = {
   movie: "movies",
   apk: "apk",
   file: "files",
+  article: "articles",
 };
 
 export async function POST(request) {
@@ -37,12 +38,15 @@ export async function POST(request) {
       );
     }
 
-    if (!file || typeof file.arrayBuffer !== "function") {
-      return NextResponse.json(
-        { success: false, error: "File is required" },
-        { status: 400 }
-      );
-    }
+    if (
+  type !== "article" &&
+  (!file || typeof file.arrayBuffer !== "function")
+) {
+  return NextResponse.json(
+    { success: false, error: "File is required" },
+    { status: 400 }
+  );
+}
 
     const folder = TYPES[type] || TYPES.file;
 

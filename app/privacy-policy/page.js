@@ -1,34 +1,49 @@
-export default function PrivacyPolicy() {
+export const metadata = {
+  title: "Privacy Policy",
+  description: "GoogleAi Privacy Policy.",
+};
+
+export default function PrivacyPage() {
   return (
-    <main>
-      <h1>Privacy Policy</h1>
+    <main className="legalPage">
+      <div className="legalCard">
+        <a href="/">← Home</a>
+        <h1>Privacy Policy</h1>
 
-      <p>
-        At Google AI Site, accessible from https://googleai-site.vercel.app,
-        we respect your privacy and are committed to protecting your personal information.
-      </p>
+        <p>
+          This Privacy Policy explains how GoogleAi may handle information
+          when visitors use our website.
+        </p>
 
-      <h2>Information We Collect</h2>
-      <p>
-        We may collect information such as browser type, device information,
-        and usage data to improve our website experience.
-      </p>
+        <h2>Information</h2>
+        <p>
+          We may receive information that you voluntarily provide, such as
+          information submitted through contact or other website features.
+        </p>
 
-      <h2>Google AdSense</h2>
-      <p>
-        We use Google AdSense to display advertisements. Google may use cookies
-        to show relevant ads based on users' visits to this and other websites.
-      </p>
+        <h2>Cookies and Advertising</h2>
+        <p>
+          We may use cookies and similar technologies for functionality,
+          analytics and advertising. Third-party advertising providers may
+          use cookies to provide relevant advertisements according to their
+          own policies.
+        </p>
 
-      <h2>Cookies</h2>
-      <p>
-        Our website uses cookies to improve user experience and analyze traffic.
-      </p>
+        <h2>Third-Party Services</h2>
+        <p>
+          Our website may use third-party services for hosting, analytics,
+          advertising and AI functionality. Those services may process
+          information according to their respective privacy policies.
+        </p>
 
-      <h2>Contact</h2>
-      <p>
-        If you have any questions about this Privacy Policy, please contact us.
-      </p>
+        <h2>Contact</h2>
+        <p>
+          Questions about privacy can be sent to
+          aliahmadoffcial63@gmail.com.
+        </p>
+
+        <p>Last updated: August 28, 2026</p>
+      </div>
     </main>
   );
 }

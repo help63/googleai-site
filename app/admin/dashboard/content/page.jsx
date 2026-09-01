@@ -7,6 +7,7 @@ const TYPES = [
   ["movie", "🎬 Movie"],
   ["apk", "📱 APK"],
   ["file", "📁 File"],
+  ["article", "📝 Article"],
 ];
 
 export default function ContentManager() {

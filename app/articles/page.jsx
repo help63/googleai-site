@@ -1,99 +1,92 @@
 import Link from "next/link";
+import fs from "fs/promises";
+import path from "path";
 import AdManager from "../components/AdManager";
 import AdSlot from "../../components/AdSlot";
 
 export const metadata = {
-  title: "GoogleAI Articles - AI & Technology Guides",
+  title: "GoogleAI Technology Articles",
   description:
-    "Read GoogleAI Site articles about artificial intelligence, technology and digital trends.",
+    "Read AI, technology and digital resource articles from GoogleAI Editorial Team.",
 };
 
-export default function Page() {
-  const article = {
-    title: "GoogleAI Technology Articles",
-    author: "GoogleAI Editorial Team",
-    published: "2026-09-01",
-    updated: "2026-09-01",
-  };
+async function getArticles() {
+  try {
+    const file = path.join(
+      process.cwd(),
+      "data",
+      "articles.json"
+    );
 
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": article.title,
-    "author": {
-      "@type": "Organization",
-      "name": article.author,
-      "url": "https://googleai-site.vercel.app/author/googleai-team"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "GoogleAI Site",
-      "url": "https://googleai-site.vercel.app"
-    },
-    "datePublished": article.published,
-    "dateModified": article.updated,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "https://googleai-site.vercel.app/articles"
-    }
-  };
+    const data = await fs.readFile(file, "utf8");
+
+    return JSON.parse(data).filter(
+      (item) => item.published !== false
+    );
+  } catch {
+    return [];
+  }
+}
+
+export default async function Page() {
+  const articles = await getArticles();
 
   return (
     <>
-      <AdManager 
-        provider="Google AdSense" 
-        slot="articles-top" 
-      />
+      <AdManager provider="Google AdSense" slot="articles-top" />
 
       <AdSlot title="Advertisement Top" />
 
       <main className="portal">
         <section className="section">
 
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(schema),
-            }}
-          />
-
           <span className="category">
-            GOOGLEAI
+            GOOGLEAI ARTICLES
           </span>
 
           <h1>
-            {article.title}
+            GoogleAI Technology Articles
           </h1>
 
           <p>
-            By{" "}
-            <Link href="/author/googleai-team">
-              {article.author}
-            </Link>
+            AI, technology and digital guides
+            published by GoogleAI Editorial Team.
           </p>
 
-          <p>
-            Published: {article.published}
-          </p>
+          {articles.length === 0 && (
+            <p>No articles available.</p>
+          )}
 
-          <p>
-            Updated: {article.updated}
-          </p>
+          {articles.map((article) => (
+            <article key={article.id}>
 
-          <p>
-            GoogleAI Site provides technology articles,
-            artificial intelligence guides, digital tool
-            reviews and useful online resources.
-          </p>
+              <h2>
+                <Link href={`/articles/${article.slug}`}>
+                  {article.title}
+                </Link>
+              </h2>
 
-          <p>
-            Our editorial team researches technology topics
-            and creates helpful content for readers.
-          </p>
+              <p>
+                By{" "}
+                <Link href="/author/googleai-team">
+                  {article.author}
+                </Link>
+              </p>
 
-          <Link href="/" className="read-more">
-            ← Back to Home
-          </Link>
+              <p>
+                Published: {article.publishedAt}
+                {" | "}
+                Updated: {article.updatedAt}
+              </p>
+
+              <p>
+                {article.content}
+              </p>
+
+              <hr />
+
+            </article>
+          ))}
 
         </section>
       </main>
