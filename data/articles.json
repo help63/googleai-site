@@ -1,0 +1,15 @@
+[
+  {
+    "id": "welcome-ai",
+    "title": "Welcome to GoogleAI Site",
+    "slug": "welcome-to-googleai-site",
+    "author": "GoogleAI Editorial Team",
+    "authorBio": "Our editorial team creates technology, AI and digital content updates.",
+    "category": "AI",
+    "content": "GoogleAI Site provides AI tools, technology updates, digital guides and useful resources for users.",
+    "featuredImage": "",
+    "publishedAt": "2026-09-01",
+    "updatedAt": "2026-09-01",
+    "published": true
+  }
+]
