@@ -747,14 +747,7 @@ export default function HomePage() {
         <p style={{ fontSize: 13 }}>
           Public Website • Private Admin Controls
         </p>
-      
-<div style={{marginTop:"20px"}}>
-  <Link href="/about">About</Link>{" | "}
-  <Link href="/privacy">Privacy Policy</Link>{" | "}
-  <Link href="/contact">Contact</Link>
-</div>
-</footer>
-
+      </footer>
 
       <style jsx>{`
         .navBtn {
