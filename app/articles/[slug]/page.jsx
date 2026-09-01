@@ -24,6 +24,54 @@ export default async function ArticlePage({ params }) {
   const publishedDate = "2026-09-01";
   const updatedDate = "2026-09-01";
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://googleai-site.vercel.app"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Articles",
+        "item": "https://googleai-site.vercel.app/articles"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": title,
+        "item": `https://googleai-site.vercel.app/articles/${params.slug}`
+      }
+    ]
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Artificial Intelligence?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Artificial Intelligence is technology that enables computer systems to perform tasks that normally require human intelligence."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is AI changing technology?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AI is improving automation, productivity, research and digital experiences across many industries."
+        }
+      }
+    ]
+  };
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -57,6 +105,20 @@ export default async function ArticlePage({ params }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(schema),
+          }}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(faqSchema),
+          }}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbSchema),
           }}
         />
 
