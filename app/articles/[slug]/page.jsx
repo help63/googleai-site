@@ -4,68 +4,36 @@ import path from "path";
 
 async function getArticle(slug) {
   const file = path.join(process.cwd(), "data", "articles.json");
+  const articles = JSON.parse(await fs.readFile(file, "utf8"));
 
-  const data = JSON.parse(await fs.readFile(file, "utf8"));
-
-  return data.find(
-    (article) =>
-      article.slug === slug &&
-      article.published !== false
+  return articles.find(
+    (article) => article.slug === slug && article.published
   );
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-
   const article = await getArticle(slug);
 
+  if (!article) {
+    return {
+      title: "Article Not Found | GoogleAI Site",
+    };
+  }
+
   return {
-    title: article
-      ? `${article.title} | GoogleAI Site`
-      : "Article | GoogleAI Site",
-    description: article?.content?.slice(0, 160) || "",
+    title: `${article.title} | GoogleAI Site`,
+    description: article.content.slice(0, 160),
   };
 }
 
 export default async function ArticlePage({ params }) {
   const { slug } = await params;
-
   const article = await getArticle(slug);
 
   if (!article) {
-    return (
-      <main className="portal">
-        <section className="section">
-          <h1>Article Not Found</h1>
-        </section>
-      </main>
-    );
+    return <h1>Article Not Found</h1>;
   }
-
-  const articleUrl =
-    `https://googleai-site.vercel.app/articles/${article.slug}`;
-
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": article.title,
-    "author": {
-      "@type": "Organization",
-      "name": article.author,
-      "url":
-        "https://googleai-site.vercel.app/author/googleai-team"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "GoogleAI Site"
-    },
-    "datePublished": article.publishedAt,
-    "dateModified": article.updatedAt,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": articleUrl
-    }
-  };
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -87,24 +55,21 @@ export default async function ArticlePage({ params }) {
         "@type": "ListItem",
         "position": 3,
         "name": article.title,
-        "item": articleUrl
+        "item": `https://googleai-site.vercel.app/articles/${article.slug}`
       }
     ]
   };
 
-  const faqSchema = {
+  const articleSchema = {
     "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": `What is ${article.category}?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": article.content.slice(0, 200)
-        }
-      }
-    ]
+    "@type": "Article",
+    "headline": article.title,
+    "author": {
+      "@type": "Organization",
+      "name": article.author
+    },
+    "datePublished": article.publishedAt,
+    "dateModified": article.updatedAt
   };
 
   return (
@@ -114,7 +79,7 @@ export default async function ArticlePage({ params }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schema)
+            __html: JSON.stringify(articleSchema)
           }}
         />
 
@@ -122,13 +87,6 @@ export default async function ArticlePage({ params }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(breadcrumbSchema)
-          }}
-        />
-
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema)
           }}
         />
 
@@ -149,35 +107,13 @@ export default async function ArticlePage({ params }) {
           Published: {article.publishedAt}
         </p>
 
-        <p>
-          Updated: {article.updatedAt}
-        </p>
-
         <hr />
 
-        <div>
-          {article.content}
-        </div>
-
-        <h2>Related Articles</h2>
-
-        <ul>
-          <li>
-            <Link href="/articles/future-of-artificial-intelligence-2026">
-              Future of Artificial Intelligence 2026
-            </Link>
-          </li>
-          <li>
-            <Link href="/articles/best-ai-tools-guide-2026">
-              Best AI Tools Guide 2026
-            </Link>
-          </li>
-          <li>
-            <Link href="/articles/machine-learning-explained">
-              Machine Learning Explained
-            </Link>
-          </li>
-        </ul>
+        {article.content.split("\n\n").map((text, i) => (
+          <p key={i}>
+            {text}
+          </p>
+        ))}
 
       </section>
     </main>
