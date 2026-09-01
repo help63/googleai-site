@@ -1,5 +1,8 @@
 import "./globals.css";
 import Script from "next/script";
+import Link from "next/link";
+import fs from "fs/promises";
+import path from "path";
 
 export const metadata = {
   title: "GoogleAi — Global AI, News, Shopping & Live TV Portal",
@@ -9,10 +12,29 @@ export const metadata = {
 
 const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
-export default function RootLayout({ children }) {
+async function getMenu() {
+  try {
+    const file = path.join(process.cwd(), "data", "menu.json");
+    const menu = JSON.parse(await fs.readFile(file, "utf8"));
+    return menu.filter(item => item.enabled);
+  } catch {
+    return [];
+  }
+}
+
+export default async function RootLayout({ children }) {
+  const menu = await getMenu();
   return (
     <html lang="en">
       <body>
+
+        <nav>
+          {menu.map((item) => (
+            <Link key={item.url} href={item.url}>
+              {item.title}
+            </Link>
+          ))}
+        </nav>
 
         <Script
   async

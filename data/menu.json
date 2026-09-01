@@ -1,0 +1,37 @@
+[
+  {
+    "title": "AI Articles",
+    "url": "/articles",
+    "enabled": true
+  },
+  {
+    "title": "Videos",
+    "url": "/videos",
+    "enabled": true
+  },
+  {
+    "title": "News",
+    "url": "/news",
+    "enabled": true
+  },
+  {
+    "title": "Live TV",
+    "url": "/tv",
+    "enabled": true
+  },
+  {
+    "title": "Shopping",
+    "url": "/shopping",
+    "enabled": true
+  },
+  {
+    "title": "Jobs",
+    "url": "/jobs",
+    "enabled": true
+  },
+  {
+    "title": "Editor",
+    "url": "/editor",
+    "enabled": true
+  }
+]
