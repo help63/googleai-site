@@ -25,7 +25,7 @@ export default async function sitemap() {
     "/travel",
   ];
 
-  const urls = routes.map((route) => ({
+  let urls = routes.map((route) => ({
     url: `${BASE}${route}`,
     lastModified: new Date(),
   }));
@@ -41,19 +41,38 @@ export default async function sitemap() {
       await fs.readFile(file, "utf8")
     );
 
-    for (const article of articles) {
-      if (article.slug && article.published !== false) {
-        urls.push({
-          url: `${BASE}/articles/${article.slug}`,
+    urls.push(
+      ...articles
+        .filter((item) => item.published !== false)
+        .map((item) => ({
+          url: `${BASE}/articles/${item.slug}`,
           lastModified: new Date(
-            article.updatedAt || article.publishedAt || Date.now()
+            item.updatedAt || item.publishedAt || Date.now()
           ),
-        });
-      }
-    }
-  } catch (e) {
-    console.error("Sitemap article error:", e);
-  }
+        }))
+    );
+  } catch {}
+
+  try {
+    const file = path.join(
+      process.cwd(),
+      "data",
+      "posts.json"
+    );
+
+    const posts = JSON.parse(
+      await fs.readFile(file, "utf8")
+    );
+
+    urls.push(
+      ...posts
+        .filter((post) => post.published !== false && post.slug)
+        .map((post) => ({
+          url: `${BASE}/${post.type}/${post.slug}`,
+          lastModified: new Date(),
+        }))
+    );
+  } catch {}
 
   return urls;
 }

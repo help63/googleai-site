@@ -1,0 +1,18 @@
+[
+  {
+    "id": "test-news-001",
+    "type": "news",
+    "title": "GoogleAI News Test Post",
+    "content": "This is a test news post.",
+    "url": "",
+    "published": true
+  },
+  {
+    "id": "test-news-001",
+    "type": "news",
+    "title": "GoogleAI News Test Post",
+    "content": "This is a test news post.",
+    "url": "",
+    "published": true
+  }
+]

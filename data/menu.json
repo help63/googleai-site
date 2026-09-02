@@ -1,12 +1,7 @@
 [
   {
-    "title": "AI Articles",
+    "title": "Articles",
     "url": "/articles",
-    "enabled": true
-  },
-  {
-    "title": "Videos",
-    "url": "/videos",
     "enabled": true
   },
   {
@@ -15,23 +10,18 @@
     "enabled": true
   },
   {
-    "title": "Live TV",
-    "url": "/tv",
+    "title": "Videos",
+    "url": "/videos",
     "enabled": true
   },
   {
-    "title": "Shopping",
-    "url": "/shopping",
+    "title": "Guest Posts",
+    "url": "/guest-posts",
     "enabled": true
   },
   {
-    "title": "Jobs",
-    "url": "/jobs",
-    "enabled": true
-  },
-  {
-    "title": "Editor",
-    "url": "/editor",
+    "title": "Social Posts",
+    "url": "/social",
     "enabled": true
   }
 ]
