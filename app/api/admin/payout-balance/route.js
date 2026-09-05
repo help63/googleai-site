@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { isAdminAuthenticated } from "../../../../lib/admin-auth";
 
-const sql = neon(process.env.DATABASE_URL);
+const sql = neon(process.env.DATABASE_URLL);
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {

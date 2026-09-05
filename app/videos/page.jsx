@@ -1,74 +1,40 @@
-"use client";
+import { getPosts } from "../../lib/posts";
 
-import AdManager from "../components/AdManager";
+export default async function Page(){
 
-import Link from "next/link";
+ const posts = await getPosts("video");
 
-export default function VideosPage() {
-  return (
-    <>
-      <AdManager provider="Google AdSense" slot="videos-top" />
-    <main style={{
-      minHeight: "100vh",
-      padding: "40px 20px",
-      background: "linear-gradient(135deg,#111827,#312e81,#581c87)",
-      color: "white"
-    }}>
-      <div style={{
-        maxWidth: "1100px",
-        margin: "0 auto"
-      }}>
-        <Link href="/" style={{
-          color: "white",
-          textDecoration: "none",
-          fontWeight: "700"
-        }}>
-          ← Home
-        </Link>
+ return (
+  <main style={{padding:30}}>
+   <h1>🎥 Videos</h1>
 
-        <h1 style={{
-          fontSize: "clamp(36px,7vw,70px)",
-          margin: "50px 0 10px"
-        }}>
-          🎬 Videos
-        </h1>
+   {posts.length === 0 ? (
+    <p>No posts available.</p>
+   ) : (
 
-        <p style={{
-          opacity: .8,
-          fontSize: "18px"
-        }}>
-          GoogleAi video portal
-        </p>
+    posts.map(post => (
+     <article key={post.id} style={{
+       marginBottom:20,
+       padding:20,
+       border:"1px solid #ddd",
+       borderRadius:12
+     }}>
 
-        <div style={{
-          marginTop: "35px",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-          gap: "20px"
-        }}>
-          {[
-            ["🔥","Trending Videos"],
-            ["📰","News Videos"],
-            ["🤖","AI Videos"],
-            ["🏏","Cricket Videos"],
-            ["🌍","World Videos"],
-            ["🎥","Featured Videos"]
-          ].map(([icon,title]) => (
-            <div key={title} style={{
-              padding: "30px 20px",
-              borderRadius: "24px",
-              background: "rgba(255,255,255,.12)",
-              border: "1px solid rgba(255,255,255,.2)",
-              boxShadow: "0 20px 50px rgba(0,0,0,.25)"
-            }}>
-              <div style={{fontSize:"42px"}}>{icon}</div>
-              <h2>{title}</h2>
-              <p style={{opacity:.7}}>Coming soon</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </main>
-    </>
-  );
+      <h2>{post.title}</h2>
+
+      <p>{post.content}</p>
+
+      {post.url && (
+       <a href={post.url} target="_blank">
+        Open Link
+       </a>
+      )}
+
+     </article>
+    ))
+
+   )}
+
+  </main>
+ );
 }

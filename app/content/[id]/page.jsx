@@ -1,0 +1,124 @@
+import fs from "fs/promises";
+import path from "path";
+import { notFound } from "next/navigation";
+
+async function getItem(id) {
+  try {
+    const file = path.join(process.cwd(), "data", "content.json");
+    const items = JSON.parse(await fs.readFile(file, "utf8"));
+
+    return items.find(
+      (item) =>
+        item.id === id &&
+        item.published !== false
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  const item = await getItem(id);
+
+  if (!item) {
+    return {
+      title: "Content Not Found",
+    };
+  }
+
+  return {
+    title: `${item.title} | GoogleAI Site`,
+    description:
+      item.description ||
+      `Download ${item.title} from GoogleAI Site.`,
+    alternates: {
+      canonical: `https://googleai-site.vercel.app/content/${item.id}`,
+    },
+  };
+}
+
+export default async function ContentPage({ params }) {
+  const { id } = await params;
+  const item = await getItem(id);
+
+  if (!item) notFound();
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#020617",
+        color: "#fff",
+        padding: "50px 20px",
+      }}
+    >
+      <article
+        style={{
+          maxWidth: 850,
+          margin: "auto",
+          padding: 30,
+          borderRadius: 20,
+          background: "#111827",
+          border: "1px solid #29324d",
+        }}
+      >
+        <div
+          style={{
+            color: "#a78bfa",
+            fontWeight: 800,
+          }}
+        >
+          {String(item.type || "content").toUpperCase()}
+        </div>
+
+        <h1>{item.title}</h1>
+
+        {item.description && (
+          <p
+            style={{
+              color: "#cbd5e1",
+              lineHeight: 1.7,
+            }}
+          >
+            {item.description}
+          </p>
+        )}
+
+        {item.thumbnailUrl && (
+          <img
+            src={item.thumbnailUrl}
+            alt={item.title}
+            style={{
+              width: "100%",
+              maxHeight: 420,
+              objectFit: "cover",
+              borderRadius: 14,
+              margin: "20px 0",
+            }}
+          />
+        )}
+
+        {item.downloadUrl && (
+          <a
+            href={item.downloadUrl}
+            download
+            style={{
+              display: "inline-block",
+              marginTop: 20,
+              padding: "14px 22px",
+              borderRadius: 10,
+              background: "#16a34a",
+              color: "#fff",
+              textDecoration: "none",
+              fontWeight: 900,
+            }}
+          >
+            ⬇️ Download
+          </a>
+        )}
+      </article>
+    </main>
+  );
+}
+

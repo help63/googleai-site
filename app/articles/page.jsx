@@ -1,18 +1,46 @@
 import Link from "next/link";
-import fs from "fs/promises";
-import path from "path";
+import { Client } from "pg";
+
+export const dynamic = "force-dynamic";
 
 async function getArticles() {
-  const file = path.join(process.cwd(), "data", "articles.json");
-  const articles = JSON.parse(await fs.readFile(file, "utf8"));
+  const client = new Client({
+    connectionString:
+      process.env.DATABASE_URL_UNPOOLED ||
+      process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    connectionTimeoutMillis: 30000
+  });
 
-  return articles.filter(article => article.published);
+  try {
+    await client.connect();
+
+    const result = await client.query(`
+      SELECT
+        id,
+        title,
+        slug,
+        author,
+        category,
+        published_at AS "publishedAt",
+        updated_at AS "updatedAt",
+        content
+      FROM articles
+      WHERE published = TRUE
+      ORDER BY published_at DESC, created_at DESC
+    `);
+
+    return result.rows;
+  } finally {
+    await client.end().catch(() => {});
+  }
 }
 
 export const metadata = {
   title: "AI Articles | GoogleAI Site",
-  description:
-    "Explore artificial intelligence, technology and digital guides from GoogleAI Site."
+  description: "Latest artificial intelligence and technology articles."
 };
 
 export default async function ArticlesPage() {
@@ -28,31 +56,61 @@ export default async function ArticlesPage() {
           Explore technology, artificial intelligence and digital resources.
         </p>
 
-        {articles.map((article) => (
-          <article key={article.id}>
+        <div className="articles-list">
+          {articles.map((article) => {
+            const preview = article.content
+              .replace(/\s+/g, " ")
+              .trim();
 
-            <h2>
-              <Link href={`/articles/${article.slug}`}>
-                {article.title}
-              </Link>
-            </h2>
+            const shortPreview =
+              preview.length > 250
+                ? preview.slice(0, 250) + "..."
+                : preview;
 
-            <p>
-              Category: {article.category}
-            </p>
+            const publishedDate = new Intl.DateTimeFormat(
+              "en-US",
+              {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+              }
+            ).format(new Date(article.publishedAt));
 
-            <p>
-              Published: {article.publishedAt}
-            </p>
+            return (
+              <article
+                key={article.id}
+                className="article-card"
+              >
 
-            <p>
-              {article.content.slice(0,180)}...
-            </p>
+                <span className="category">
+                  {article.category}
+                </span>
 
-            <hr />
+                <h2>
+                  <Link href={`/articles/${article.slug}`}>
+                    {article.title}
+                  </Link>
+                </h2>
 
-          </article>
-        ))}
+                <p className="article-date">
+                  Published: {publishedDate}
+                </p>
+
+                <p className="article-preview">
+                  {shortPreview}
+                </p>
+
+                <Link
+                  href={`/articles/${article.slug}`}
+                  className="read-more"
+                >
+                  Read Full Article →
+                </Link>
+
+              </article>
+            );
+          })}
+        </div>
 
       </section>
     </main>

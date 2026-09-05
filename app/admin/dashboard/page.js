@@ -2,6 +2,7 @@ import { isAdminAuthenticated } from "../../../lib/admin-auth";
 import { redirect } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 import NewsManager from "./NewsManager";
+import ArticlesManager from "./ArticlesManager";
 import ToolboxMenu from "./ToolboxMenu";
 
 export default async function Dashboard() {
@@ -86,6 +87,8 @@ export default async function Dashboard() {
 <div style={{ marginTop: 30 }}>
           <NewsManager />
         </div>
+
+        <ArticlesManager />
 
 
           <div style={{ marginTop: 25 }}>

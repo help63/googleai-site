@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "../../../../lib/admin-auth";
 import { neon } from "@neondatabase/serverless";
 
-console.log("PAYOUT DB:", process.env.DATABASE_URL_UNPOOLED?.slice(0,60));
+console.log("PAYOUT DB configured:", !!process.env.DATABASE_URL_UNPOOLED);
 const sql = neon(process.env.DATABASE_URL_UNPOOLED);
 
 async function authorized() {

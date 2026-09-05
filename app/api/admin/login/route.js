@@ -40,7 +40,7 @@ export async function POST(req) {
     `${payload}.${signature}`,
     {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: new URL(req.url).hostname !== "localhost",
       sameSite: "strict",
       maxAge: 60 * 60 * 24
     }

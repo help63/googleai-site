@@ -166,6 +166,12 @@ export default function ToolboxMenu() {
                   window.location.href = "/admin/dashboard/iptv";
                   return;
                 }
+
+                if (name === "Articles") {
+                  window.location.href = "/admin/dashboard/content";
+                  return;
+                }
+
                 setActive(name);
               }}
               style={{

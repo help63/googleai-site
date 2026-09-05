@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const TYPES = [
   ["game", "🎮 Game"],
@@ -21,6 +21,11 @@ export default function ContentManager() {
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [postType, setPostType] = useState("news");
+  const [postTitle, setPostTitle] = useState("");
+  const [postContent, setPostContent] = useState("");
+  const [postUrl, setPostUrl] = useState("");
 
   async function loadContent() {
     try {
@@ -239,6 +244,96 @@ export default function ContentManager() {
         }}
       >
         <h1>📦 Universal Content Manager</h1>
+        <section
+          style={{
+            marginTop:25,
+            padding:24,
+            borderRadius:16,
+            background:"#11182b",
+            border:"1px solid #29324d"
+          }}
+        >
+          <h2>🚀 Auto News / Video / Guest / Social Post</h2>
+
+          <select
+            value={postType}
+            onChange={(e)=>setPostType(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="news">📰 News</option>
+            <option value="video">🎥 Video</option>
+            <option value="guest">✍️ Guest Post</option>
+            <option value="social">📱 Social Post</option>
+          </select>
+
+          <input
+            value={postTitle}
+            onChange={(e)=>setPostTitle(e.target.value)}
+            placeholder="Title"
+            style={inputStyle}
+          />
+
+          <textarea
+            value={postContent}
+            onChange={(e)=>setPostContent(e.target.value)}
+            placeholder="Content"
+            rows="5"
+            style={inputStyle}
+          />
+
+          <input
+            value={postUrl}
+            onChange={(e)=>setPostUrl(e.target.value)}
+            placeholder="Video / Facebook / WhatsApp link"
+            style={inputStyle}
+          />
+
+          <button
+            style={buttonStyle}
+            onClick={async()=>{
+
+              const res = await fetch("/api/admin/posts",{
+                method:"POST",
+                headers:{
+                  "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                  type:postType,
+                  title:postTitle,
+                  content:postContent,
+                  url:postUrl
+                })
+              });
+
+              const data=await res.json();
+
+              setMessage(
+                data.success
+                ?"✅ Post Added"
+                :"❌ "+data.error
+              );
+
+            }}
+          >
+            ➕ Publish Post
+          </button>
+
+        </section>
+
+
+        <section
+          style={{
+            marginTop:20,
+            padding:20,
+            borderRadius:16,
+            background:"#11182b",
+            border:"1px solid #29324d"
+          }}
+        >
+          <h2>📝 Add AI Article</h2>
+
+          <ArticleBox />
+        </section>
 
         <p style={{ color: "#94a3b8" }}>
           Admin-only Games, Movies, APKs and Files management.
@@ -488,6 +583,69 @@ export default function ContentManager() {
       </div>
     </main>
   );
+}
+
+
+function ArticleBox(){
+
+  const [title,setTitle] = React.useState("");
+  const [content,setContent] = React.useState("");
+  const [msg,setMsg] = React.useState("");
+
+  async function saveArticle(){
+
+    const res = await fetch("/api/admin/articles",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        title,
+        content
+      })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      setMsg("✅ Article added");
+      setTitle("");
+      setContent("");
+    }else{
+      setMsg(
+        "❌ " +
+        (data.details || data.error || "Unknown error")
+      );
+    }
+  }
+
+  return (
+    <>
+      <input
+        style={inputStyle}
+        placeholder="Article title"
+        value={title}
+        onChange={e=>setTitle(e.target.value)}
+      />
+
+      <textarea
+        style={inputStyle}
+        rows={8}
+        placeholder="Article content"
+        value={content}
+        onChange={e=>setContent(e.target.value)}
+      />
+
+      <button
+        style={buttonStyle}
+        onClick={saveArticle}
+      >
+        Publish Article
+      </button>
+
+      <p>{msg}</p>
+    </>
+  )
 }
 
 const inputStyle = {

@@ -1,0 +1,141 @@
+import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
+import { Client } from "pg";
+import crypto from "crypto";
+import { promises as dns } from "dns";
+
+async function createDatabaseClient() {
+  const connectionString =
+    process.env.DATABASE_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is missing");
+  }
+
+  const url = new URL(connectionString);
+
+  // Resolve IPv4 directly because Node hostname connection
+  // is timing out in this environment.
+  const addresses = await dns.resolve4(url.hostname);
+
+  if (!addresses.length) {
+    throw new Error("No IPv4 address found for database");
+  }
+
+  return new Client({
+    host: addresses[0],
+    port: Number(url.port || 5432),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: url.pathname.replace(/^\//, ""),
+    ssl: {
+      rejectUnauthorized: false,
+      servername: url.hostname
+    },
+    connectionTimeoutMillis: 30000
+  });
+}
+
+export async function POST(request) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+
+    const title = String(body.title || "").trim();
+    const content = String(body.content || "").trim();
+
+    if (!title || !content) {
+      return NextResponse.json(
+        { success: false, error: "Title and content required" },
+        { status: 400 }
+      );
+    }
+
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    const article = {
+      id: crypto.randomUUID(),
+      title,
+      slug,
+      author: "GoogleAI Editorial Team",
+      category: body.category || "Artificial Intelligence",
+      publishedAt: today,
+      updatedAt: today,
+      published: true,
+      content
+    };
+
+    const client = await createDatabaseClient();
+
+    try {
+      await client.connect();
+
+      await client.query(
+        `
+        INSERT INTO articles (
+          id,
+          title,
+          slug,
+          author,
+          category,
+          published_at,
+          updated_at,
+          published,
+          content
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        ON CONFLICT (slug)
+        DO UPDATE SET
+          title = EXCLUDED.title,
+          author = EXCLUDED.author,
+          category = EXCLUDED.category,
+          updated_at = EXCLUDED.updated_at,
+          published = EXCLUDED.published,
+          content = EXCLUDED.content
+        `,
+        [
+          article.id,
+          article.title,
+          article.slug,
+          article.author,
+          article.category,
+          article.publishedAt,
+          article.updatedAt,
+          article.published,
+          article.content
+        ]
+      );
+    } finally {
+      await client.end().catch(() => {});
+    }
+
+    return NextResponse.json({
+      success: true,
+      article
+    });
+
+  } catch (error) {
+    console.error("ARTICLE CREATE ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to create article",
+        details: error.message
+      },
+      { status: 500 }
+    );
+  }
+}

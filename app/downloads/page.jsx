@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const TYPES = [
   ["all", "📥 All"],
@@ -142,6 +143,23 @@ export default function DownloadsPage() {
                 >
                   📄 {item.originalName || "Uploaded file"}
                 </p>
+
+                <Link
+                  href={`/content/${item.id}`}
+                  style={{
+                    display: "block",
+                    marginTop: 15,
+                    padding: 12,
+                    textAlign: "center",
+                    borderRadius: 10,
+                    background: "#7c3aed",
+                    color: "#fff",
+                    textDecoration: "none",
+                    fontWeight: 900,
+                  }}
+                >
+                  👁️ View Details
+                </Link>
 
                 <a
                   href={item.downloadUrl}

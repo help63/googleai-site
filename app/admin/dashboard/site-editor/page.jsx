@@ -15,6 +15,7 @@ export default function SiteEditor() {
     ["🎨", "AI Images"],
     ["🎥", "AI Videos"],
     ["📁", "Files"],
+    ["📝", "Articles"],
     ["📝", "Text"],
     ["⚙️", "Settings"],
   ];
@@ -98,7 +99,13 @@ export default function SiteEditor() {
           {menuItems.map(([icon, name]) => (
             <button
               key={name}
-              onClick={() => setSelectedMenu(name)}
+              onClick={() => {
+                if (name === "Articles") {
+                  window.location.href = "/admin/dashboard/content";
+                  return;
+                }
+                setSelectedMenu(name);
+              }}
               style={{
                 display: "block",
                 width: "100%",

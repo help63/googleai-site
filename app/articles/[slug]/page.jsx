@@ -1,14 +1,47 @@
 import Link from "next/link";
-import fs from "fs/promises";
-import path from "path";
+import { Client } from "pg";
+
+export const dynamic = "force-dynamic";
 
 async function getArticle(slug) {
-  const file = path.join(process.cwd(), "data", "articles.json");
-  const articles = JSON.parse(await fs.readFile(file, "utf8"));
+  const client = new Client({
+    connectionString:
+      process.env.DATABASE_URL_UNPOOLED ||
+      process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    connectionTimeoutMillis: 30000
+  });
 
-  return articles.find(
-    (article) => article.slug === slug && article.published
-  );
+  try {
+    await client.connect();
+
+    const result = await client.query(
+      `
+      SELECT
+        id,
+        title,
+        slug,
+        author,
+        category,
+        published_at AS "publishedAt",
+        updated_at AS "updatedAt",
+        published,
+        content
+      FROM articles
+      WHERE slug = $1
+        AND published = TRUE
+      LIMIT 1
+      `,
+      [slug]
+    );
+
+    return result.rows[0] || null;
+
+  } finally {
+    await client.end().catch(() => {});
+  }
 }
 
 export async function generateMetadata({ params }) {
@@ -17,13 +50,16 @@ export async function generateMetadata({ params }) {
 
   if (!article) {
     return {
-      title: "Article Not Found | GoogleAI Site",
+      title: "Article Not Found | GoogleAI Site"
     };
   }
 
   return {
     title: `${article.title} | GoogleAI Site`,
-    description: article.content.slice(0, 160),
+    description: article.content
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 160)
   };
 }
 
@@ -32,8 +68,31 @@ export default async function ArticlePage({ params }) {
   const article = await getArticle(slug);
 
   if (!article) {
-    return <h1>Article Not Found</h1>;
+    return (
+      <main className="portal">
+        <section className="section">
+          <h1>Article Not Found</h1>
+
+          <p>
+            This article does not exist or is not published.
+          </p>
+
+          <Link href="/articles">
+            ← Back to Articles
+          </Link>
+        </section>
+      </main>
+    );
   }
+
+  const publishedDate = new Intl.DateTimeFormat(
+    "en-US",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    }
+  ).format(new Date(article.publishedAt));
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -103,17 +162,31 @@ export default async function ArticlePage({ params }) {
           </Link>
         </p>
 
-        <p>
-          Published: {article.publishedAt}
+        <p className="article-date">
+          Published: {publishedDate}
         </p>
 
         <hr />
 
-        {article.content.split("\n\n").map((text, i) => (
-          <p key={i}>
-            {text}
-          </p>
-        ))}
+        <div className="article-content">
+          {article.content
+            .split(/\n\s*\n/)
+            .filter(Boolean)
+            .map((text, i) => (
+              <p key={i}>
+                {text}
+              </p>
+            ))}
+        </div>
+
+        <hr />
+
+        <Link
+          href="/articles"
+          className="read-more"
+        >
+          ← Back to All Articles
+        </Link>
 
       </section>
     </main>

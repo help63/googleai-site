@@ -1,0 +1,214 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+export default function ArticlesManager() {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  async function loadArticles() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch("/api/admin/articles", {
+        credentials: "include"
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to load articles");
+      }
+
+      setArticles(data.articles || []);
+
+    } catch (err) {
+      setError(err.message || "Failed to load articles");
+
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function deleteArticle(id, title) {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${title}"?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch("/api/admin/articles", {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to delete article");
+      }
+
+      setArticles((current) =>
+        current.filter((article) => article.id !== id)
+      );
+
+    } catch (err) {
+      alert(err.message || "Failed to delete article");
+    }
+  }
+
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
+  return (
+    <section style={{
+      marginTop: 30,
+      padding: 24,
+      borderRadius: 14,
+      background: "#111827",
+      border: "1px solid #334155"
+    }}>
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 15,
+        flexWrap: "wrap",
+        marginBottom: 20
+      }}>
+        <div>
+          <h2 style={{ margin: 0 }}>
+            📝 Database Articles
+          </h2>
+
+          <p style={{ color: "#94a3b8", marginBottom: 0 }}>
+            Articles stored in Neon PostgreSQL
+          </p>
+        </div>
+
+        <button
+          onClick={loadArticles}
+          style={{
+            padding: "10px 16px",
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer",
+            background: "#2563eb",
+            color: "white",
+            fontWeight: 700
+          }}
+        >
+          🔄 Refresh
+        </button>
+      </div>
+
+      {loading && (
+        <p style={{ color: "#94a3b8" }}>
+          Loading articles...
+        </p>
+      )}
+
+      {error && (
+        <p style={{ color: "#ef4444" }}>
+          Error: {error}
+        </p>
+      )}
+
+      {!loading && !error && articles.length === 0 && (
+        <p style={{ color: "#94a3b8" }}>
+          No articles found.
+        </p>
+      )}
+
+      {!loading && !error && articles.map((article) => (
+        <div
+          key={article.id}
+          style={{
+            padding: 18,
+            marginBottom: 12,
+            borderRadius: 10,
+            background: "#0f172a",
+            border: "1px solid #1e293b"
+          }}
+        >
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 15,
+            flexWrap: "wrap"
+          }}>
+            <div>
+              <h3 style={{ marginTop: 0, marginBottom: 8 }}>
+                {article.title}
+              </h3>
+
+              <div style={{
+                color: "#94a3b8",
+                fontSize: 14
+              }}>
+                📂 {article.category}
+                {" · "}
+                📅 {new Date(article.publishedAt).toLocaleDateString()}
+              </div>
+
+              <div style={{
+                marginTop: 8,
+                color: "#64748b",
+                fontSize: 13,
+                wordBreak: "break-all"
+              }}>
+                /news/{article.slug}
+              </div>
+            </div>
+
+            <div style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              height: "fit-content"
+            }}>
+              <a
+                href={`/news/${article.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  padding: "10px 14px",
+                  background: "#16a34a",
+                  color: "white",
+                  borderRadius: 8,
+                  textDecoration: "none",
+                  fontWeight: 700
+                }}
+              >
+                👁 View
+              </a>
+
+              <button
+                onClick={() => deleteArticle(article.id, article.title)}
+                style={{
+                  padding: "10px 14px",
+                  background: "#dc2626",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontWeight: 700
+                }}
+              >
+                🗑 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}

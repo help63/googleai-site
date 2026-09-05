@@ -34,6 +34,14 @@ export async function GET(request) {
       );
     }
 
+    // Newest uploads first.
+    content = content.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+
+      return dateB - dateA;
+    });
+
     return NextResponse.json({
       success: true,
       count: content.length,

@@ -1,0 +1,374 @@
+import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
+import { Client } from "pg";
+import crypto from "crypto";
+import { promises as dns } from "dns";
+
+async function createDatabaseClient() {
+  const connectionString =
+    process.env.DATABASE_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is missing");
+  }
+
+  const url = new URL(connectionString);
+
+  // Resolve IPv4 directly because Node hostname connection
+  // is timing out in this environment.
+  const addresses = await dns.resolve4(url.hostname);
+
+  if (!addresses.length) {
+    throw new Error("No IPv4 address found for database");
+  }
+
+  return new Client({
+    host: addresses[0],
+    port: Number(url.port || 5432),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: url.pathname.replace(/^\//, ""),
+    ssl: {
+      rejectUnauthorized: false,
+      servername: url.hostname
+    },
+    connectionTimeoutMillis: 30000
+  });
+}
+
+
+export async function GET() {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const client = await createDatabaseClient();
+
+    try {
+      await client.connect();
+
+      const result = await client.query(`
+        SELECT
+          id,
+          title,
+          slug,
+          author,
+          category,
+          published_at,
+          updated_at,
+          published,
+          content
+        FROM articles
+        ORDER BY published_at DESC, updated_at DESC
+      `);
+
+      const articles = result.rows.map((article) => ({
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        author: article.author,
+        category: article.category,
+        publishedAt: article.published_at,
+        updatedAt: article.updated_at,
+        published: article.published,
+        content: article.content
+      }));
+
+      return NextResponse.json({
+        success: true,
+        articles
+      });
+
+    } finally {
+      await client.end().catch(() => {});
+    }
+
+  } catch (error) {
+    console.error("ARTICLE LIST ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to fetch articles",
+        details: error.message
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+
+    const title = String(body.title || "").trim();
+    const content = String(body.content || "").trim();
+
+    if (!title || !content) {
+      return NextResponse.json(
+        { success: false, error: "Title and content required" },
+        { status: 400 }
+      );
+    }
+
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    const article = {
+      id: crypto.randomUUID(),
+      title,
+      slug,
+      author: "GoogleAI Editorial Team",
+      category: body.category || "Artificial Intelligence",
+      publishedAt: today,
+      updatedAt: today,
+      published: true,
+      content
+    };
+
+    const client = await createDatabaseClient();
+
+    try {
+      await client.connect();
+
+      await client.query(
+        `
+        INSERT INTO articles (
+          id,
+          title,
+          slug,
+          author,
+          category,
+          published_at,
+          updated_at,
+          published,
+          content
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        ON CONFLICT (slug)
+        DO UPDATE SET
+          title = EXCLUDED.title,
+          author = EXCLUDED.author,
+          category = EXCLUDED.category,
+          updated_at = EXCLUDED.updated_at,
+          published = EXCLUDED.published,
+          content = EXCLUDED.content
+        `,
+        [
+          article.id,
+          article.title,
+          article.slug,
+          article.author,
+          article.category,
+          article.publishedAt,
+          article.updatedAt,
+          article.published,
+          article.content
+        ]
+      );
+    } finally {
+      await client.end().catch(() => {});
+    }
+
+    return NextResponse.json({
+      success: true,
+      article
+    });
+
+  } catch (error) {
+    console.error("ARTICLE CREATE ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to create article",
+        details: error.message
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const { id } = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Article ID required" },
+        { status: 400 }
+      );
+    }
+
+    const client = await createDatabaseClient();
+
+    try {
+      await client.connect();
+
+      const result = await client.query(
+        "DELETE FROM articles WHERE id = $1 RETURNING id, slug",
+        [id]
+      );
+
+      if (result.rowCount === 0) {
+        return NextResponse.json(
+          { success: false, error: "Article not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        deleted: result.rows[0]
+      });
+
+    } finally {
+      await client.end().catch(() => {});
+    }
+
+  } catch (error) {
+    console.error("ARTICLE DELETE ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to delete article",
+        details: error.message
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+
+    const id = String(body.id || "").trim();
+    const title = String(body.title || "").trim();
+    const content = String(body.content || "").trim();
+
+    if (!id || !title || !content) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "ID, title and content are required"
+        },
+        { status: 400 }
+      );
+    }
+
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const updatedAt = new Date().toISOString();
+
+    const client = await createDatabaseClient();
+
+    try {
+      await client.connect();
+
+      const result = await client.query(
+        `
+        UPDATE articles
+        SET
+          title = $1,
+          slug = $2,
+          category = $3,
+          content = $4,
+          updated_at = $5
+        WHERE id = $6
+        RETURNING
+          id,
+          title,
+          slug,
+          author,
+          category,
+          published_at,
+          updated_at,
+          published,
+          content
+        `,
+        [
+          title,
+          slug,
+          body.category || "Artificial Intelligence",
+          content,
+          updatedAt,
+          id
+        ]
+      );
+
+      if (result.rowCount === 0) {
+        return NextResponse.json(
+          { success: false, error: "Article not found" },
+          { status: 404 }
+        );
+      }
+
+      const article = result.rows[0];
+
+      return NextResponse.json({
+        success: true,
+        article: {
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+          author: article.author,
+          category: article.category,
+          publishedAt: article.published_at,
+          updatedAt: article.updated_at,
+          published: article.published,
+          content: article.content
+        }
+      });
+
+    } finally {
+      await client.end().catch(() => {});
+    }
+
+  } catch (error) {
+    console.error("ARTICLE UPDATE ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to update article",
+        details: error.message
+      },
+      { status: 500 }
+    );
+  }
+}

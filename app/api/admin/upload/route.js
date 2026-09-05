@@ -56,7 +56,7 @@ export async function POST(request) {
       .replace(/\s+/g, "-")
       .slice(0, 80) || "download";
 
-    const ext = path.extname(file.name || "");
+    const ext = file && file.name ? path.extname(file.name) : ".jpg";
     const filename =
       `${safeTitle}-${Date.now()}-${crypto.randomBytes(5).toString("hex")}${ext}`;
 
@@ -69,12 +69,14 @@ export async function POST(request) {
 
     await fs.mkdir(uploadDir, { recursive: true });
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    if (file && typeof file.arrayBuffer === "function") {
+      const buffer = Buffer.from(await file.arrayBuffer());
 
-    await fs.writeFile(
-      path.join(uploadDir, filename),
-      buffer
-    );
+      await fs.writeFile(
+        path.join(uploadDir, filename),
+        buffer
+      );
+    }
 
     const item = {
       id: crypto.randomUUID(),

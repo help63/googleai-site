@@ -1,0 +1,107 @@
+import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
+import { Client } from "pg";
+import crypto from "crypto";
+
+export async function POST(request) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+
+    const title = String(body.title || "").trim();
+    const content = String(body.content || "").trim();
+
+    if (!title || !content) {
+      return NextResponse.json(
+        { success: false, error: "Title and content required" },
+        { status: 400 }
+      );
+    }
+
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    const article = {
+      id: crypto.randomUUID(),
+      title,
+      slug,
+      author: "GoogleAI Editorial Team",
+      category: body.category || "Artificial Intelligence",
+      publishedAt: today,
+      updatedAt: today,
+      published: true,
+      content
+    };
+
+    const client = new Client({
+      connectionString:
+        process.env.DATABASE_URL_UNPOOLED ||
+        process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false
+      },
+      connectionTimeoutMillis: 30000
+    });
+
+    try {
+      await client.connect();
+
+      await client.query(
+        `
+        INSERT INTO articles (
+          id,
+          title,
+          slug,
+          author,
+          category,
+          published_at,
+          updated_at,
+          published,
+          content
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        `,
+        [
+          article.id,
+          article.title,
+          article.slug,
+          article.author,
+          article.category,
+          article.publishedAt,
+          article.updatedAt,
+          article.published,
+          article.content
+        ]
+      );
+
+    } finally {
+      await client.end().catch(() => {});
+    }
+
+    return NextResponse.json({
+      success: true,
+      article
+    });
+
+  } catch (error) {
+    console.error("ARTICLE CREATE ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to create article"
+      },
+      { status: 500 }
+    );
+  }
+}

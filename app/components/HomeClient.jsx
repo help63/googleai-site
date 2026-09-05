@@ -418,7 +418,7 @@ export default function HomePage() {
               gap: 16,
             }}
           >
-            {filtered.slice(0, 12).map((item) => (
+            {filtered.map((item) => (
               <article
                 key={item.id}
                 style={{
@@ -478,6 +478,23 @@ export default function HomePage() {
                       {item.description}
                     </p>
                   )}
+
+                  <Link
+                    href={`/content/${item.id}`}
+                    style={{
+                      display: "block",
+                      marginTop: 12,
+                      padding: 11,
+                      textAlign: "center",
+                      borderRadius: 9,
+                      background: "#7c3aed",
+                      color: "#fff",
+                      textDecoration: "none",
+                      fontWeight: 900,
+                    }}
+                  >
+                    👁️ View Details
+                  </Link>
 
                   {item.downloadUrl && (
                     <a

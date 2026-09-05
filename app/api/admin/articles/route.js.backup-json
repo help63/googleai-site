@@ -1,0 +1,71 @@
+import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
+import fs from "fs/promises";
+import path from "path";
+import crypto from "crypto";
+
+export async function POST(request) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json(
+      { success:false, error:"Unauthorized" },
+      { status:401 }
+    );
+  }
+
+  const body = await request.json();
+
+  const title = String(body.title || "").trim();
+  const content = String(body.content || "").trim();
+
+  if (!title || !content) {
+    return NextResponse.json(
+      { success:false, error:"Title and content required" },
+      { status:400 }
+    );
+  }
+
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-|-$/g,"");
+
+  const file = path.join(
+    process.cwd(),
+    "data",
+    "articles.json"
+  );
+
+  let articles = [];
+
+  try {
+    articles = JSON.parse(
+      await fs.readFile(file,"utf8")
+    );
+  } catch {
+    articles = [];
+  }
+
+  const article = {
+    id: crypto.randomUUID(),
+    title,
+    slug,
+    author:"GoogleAI Editorial Team",
+    category: body.category || "Artificial Intelligence",
+    publishedAt:new Date().toISOString().slice(0,10),
+    updatedAt:new Date().toISOString().slice(0,10),
+    published:true,
+    content
+  };
+
+  articles.unshift(article);
+
+  await fs.writeFile(
+    file,
+    JSON.stringify(articles,null,2)
+  );
+
+  return NextResponse.json({
+    success:true,
+    article
+  });
+}
