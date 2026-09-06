@@ -1,5 +1,37 @@
 [
   {
+    "id": "8f5b7654-0c07-4821-ae99-2c0a3fbe9e37",
+    "type": "garment",
+    "title": "Direct Farr chaina hood",
+    "description": "September sale 20% discount offer email 📨\r\nBlack and tone Gary",
+    "buyPrice": 2100,
+    "salePrice": 2500,
+    "thumbnailUrl": "",
+    "originalName": "IMG_20250925_155349_010.jpg",
+    "filename": "Direct-Farr-chaina-hood-1788716384644-11afa5d76f.jpg",
+    "size": 2297383,
+    "mimeType": "image/jpeg",
+    "downloadUrl": "/uploads/garments/Direct-Farr-chaina-hood-1788716384644-11afa5d76f.jpg",
+    "published": true,
+    "createdAt": "2026-09-06T17:39:44.657Z"
+  },
+  {
+    "id": "f206a042-88ba-49e6-af61-a80d2f9a33a1",
+    "type": "garment",
+    "title": "Test T-Shirt",
+    "description": "Test garment for price display verification.",
+    "buyPrice": 1000,
+    "salePrice": 1500,
+    "thumbnailUrl": "",
+    "originalName": null,
+    "filename": null,
+    "size": 0,
+    "mimeType": null,
+    "downloadUrl": "",
+    "published": true,
+    "createdAt": "2026-09-06T16:37:19.773846+00:00"
+  },
+  {
     "id": "1272b612-fbed-4737-8338-9200449c599b",
     "type": "file",
     "title": "The Text",

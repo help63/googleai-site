@@ -85,9 +85,9 @@ export default async function ContentPage({ params }) {
           </p>
         )}
 
-        {item.thumbnailUrl && (
+        {(item.thumbnailUrl || item.downloadUrl) && (
           <img
-            src={item.thumbnailUrl}
+            src={item.thumbnailUrl || item.downloadUrl}
             alt={item.title}
             style={{
               width: "100%",
@@ -97,6 +97,63 @@ export default async function ContentPage({ params }) {
               margin: "20px 0",
             }}
           />
+        )}
+
+        {item.type === "garment" && (
+          <div
+            style={{
+              marginTop: 20,
+              padding: 18,
+              borderRadius: 14,
+              background: "#0f172a",
+              border: "1px solid #334155",
+            }}
+          >
+            {item.buyPrice !== null &&
+              item.buyPrice !== undefined &&
+              item.buyPrice !== "" && (
+                <div
+                  style={{
+                    color: "#94a3b8",
+                    fontSize: 16,
+                  }}
+                >
+                  💰 Buy Price: Rs. {item.buyPrice}
+                </div>
+              )}
+
+            {item.salePrice !== null &&
+              item.salePrice !== undefined &&
+              item.salePrice !== "" && (
+                <div
+                  style={{
+                    marginTop: 8,
+                    color: "#86efac",
+                    fontSize: 22,
+                    fontWeight: 900,
+                  }}
+                >
+                  🏷️ Sale Price: Rs. {item.salePrice}
+                </div>
+              )}
+
+            {item.buyPrice !== null &&
+              item.buyPrice !== undefined &&
+              item.buyPrice !== "" &&
+              item.salePrice !== null &&
+              item.salePrice !== undefined &&
+              item.salePrice !== "" && (
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontWeight: 900,
+                  }}
+                >
+                  📈 Profit: Rs.{" "}
+                  {Number(item.salePrice) - Number(item.buyPrice)}
+                </div>
+              )}
+          </div>
         )}
 
         {item.downloadUrl && (
