@@ -70,7 +70,17 @@ export default function ProductPage({ params }) {
     item.downloadUrl ||
     "";
 
+  const originalPrice = Number(item.buyPrice || 0);
   const salePrice = Number(item.salePrice || 0);
+
+  const discount =
+    originalPrice > 0 &&
+    salePrice > 0 &&
+    salePrice < originalPrice
+      ? Math.round(
+          ((originalPrice - salePrice) / originalPrice) * 100
+        )
+      : 0;
 
   const productUrl =
     typeof window !== "undefined"
@@ -78,7 +88,7 @@ export default function ProductPage({ params }) {
       : `https://googleai-site.vercel.app/content/${item.id}`;
 
   const shareText = encodeURIComponent(
-    `${item.title} - Check out this product!`
+    `${item.title} - Check out this special offer!`
   );
 
   const encodedUrl = encodeURIComponent(productUrl);
@@ -104,7 +114,6 @@ export default function ProductPage({ params }) {
       }}
     >
       <div style={{ maxWidth: 1100, margin: "auto" }}>
-
         <Link
           href="/garments"
           style={{
@@ -130,22 +139,23 @@ export default function ProductPage({ params }) {
           }}
         >
           <div style={{ position: "relative" }}>
-
-            <div
-              style={{
-                position: "absolute",
-                top: 15,
-                left: 15,
-                zIndex: 2,
-                padding: "8px 14px",
-                borderRadius: 999,
-                background: "#ec4899",
-                color: "#fff",
-                fontWeight: 900,
-              }}
-            >
-              🔥 SALE
-            </div>
+            {discount > 0 && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 15,
+                  left: 15,
+                  zIndex: 2,
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  background: "#ec4899",
+                  color: "#fff",
+                  fontWeight: 900,
+                }}
+              >
+                SALE • {discount}% OFF
+              </div>
+            )}
 
             {image ? (
               <img
@@ -177,7 +187,6 @@ export default function ProductPage({ params }) {
           </div>
 
           <div>
-
             <div
               style={{
                 color: "#f9a8d4",
@@ -185,7 +194,7 @@ export default function ProductPage({ params }) {
                 letterSpacing: 1,
               }}
             >
-              GARMENT
+              GARMENT SALE
             </div>
 
             <h1
@@ -210,36 +219,53 @@ export default function ProductPage({ params }) {
               </p>
             )}
 
-            {salePrice > 0 && (
-              <div
-                style={{
-                  marginTop: 22,
-                  padding: 20,
-                  borderRadius: 16,
-                  background: "#0f172a",
-                  border: "1px solid #334155",
-                }}
-              >
+            <div
+              style={{
+                marginTop: 22,
+                padding: 20,
+                borderRadius: 16,
+                background: "#0f172a",
+                border: "1px solid #334155",
+              }}
+            >
+              {originalPrice > 0 && (
                 <div
                   style={{
+                    color: "#94a3b8",
+                    textDecoration:
+                      discount > 0 ? "line-through" : "none",
+                    fontSize: 18,
+                  }}
+                >
+                  Regular Price: Rs. {originalPrice.toLocaleString()}
+                </div>
+              )}
+
+              {salePrice > 0 && (
+                <div
+                  style={{
+                    marginTop: 8,
                     color: "#86efac",
                     fontSize: 32,
                     fontWeight: 900,
                   }}
                 >
-                  Rs. {salePrice.toLocaleString()}
+                  Sale Price: Rs. {salePrice.toLocaleString()}
                 </div>
+              )}
 
+              {discount > 0 && (
                 <div
                   style={{
-                    marginTop: 6,
-                    color: "#94a3b8",
+                    marginTop: 8,
+                    color: "#fbbf24",
+                    fontWeight: 900,
                   }}
                 >
-                  Special Sale Price
+                  🔥 You save {discount}%
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <a
               href={`https://wa.me/?text=${shareText}%20${encodedUrl}`}
@@ -258,7 +284,7 @@ export default function ProductPage({ params }) {
                 fontSize: 18,
               }}
             >
-              🛍️ ORDER / SHOP ON WHATSAPP
+              🛍️ SHOP / ORDER ON WHATSAPP
             </a>
 
             <div
@@ -276,7 +302,7 @@ export default function ProductPage({ params }) {
                 rel="noopener noreferrer"
                 style={shareButton}
               >
-                📘 Facebook
+                Facebook
               </a>
 
               <a
@@ -285,7 +311,7 @@ export default function ProductPage({ params }) {
                 rel="noopener noreferrer"
                 style={shareButton}
               >
-                ✈️ Telegram
+                Telegram
               </a>
 
               <a
@@ -294,7 +320,7 @@ export default function ProductPage({ params }) {
                 rel="noopener noreferrer"
                 style={shareButton}
               >
-                𝕏 Share
+                X
               </a>
 
               <button
@@ -305,10 +331,9 @@ export default function ProductPage({ params }) {
                   cursor: "pointer",
                 }}
               >
-                {copied ? "✅ Copied!" : "🔗 Copy Link"}
+                {copied ? "Copied!" : "Copy Link"}
               </button>
             </div>
-
           </div>
         </article>
       </div>

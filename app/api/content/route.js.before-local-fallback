@@ -1,0 +1,86 @@
+import { NextResponse } from "next/server";
+import { neon } from "@neondatabase/serverless";
+
+function getSql() {
+  const connectionString =
+    process.env.DATABASE_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is missing");
+  }
+
+  return neon(connectionString);
+}
+
+function normalize(item) {
+  return {
+    id: item.id,
+    type: item.type,
+    title: item.title,
+    description: item.description || "",
+    buyPrice:
+      item.buy_price === null
+        ? null
+        : Number(item.buy_price),
+    salePrice:
+      item.sale_price === null
+        ? null
+        : Number(item.sale_price),
+    thumbnailUrl: item.thumbnail_url || "",
+    originalName: item.original_name,
+    filename: item.filename,
+    size: Number(item.size || 0),
+    mimeType: item.mime_type,
+    downloadUrl: item.download_url,
+    published: item.published !== false,
+    createdAt: item.created_at,
+    updatedAt: item.updated_at,
+  };
+}
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type");
+
+    const sql = getSql();
+
+    let items;
+
+    if (type) {
+      items = await sql`
+        SELECT *
+        FROM content_items
+        WHERE published = TRUE
+          AND type = ${String(type)}
+        ORDER BY created_at DESC
+      `;
+    } else {
+      items = await sql`
+        SELECT *
+        FROM content_items
+        WHERE published = TRUE
+        ORDER BY created_at DESC
+      `;
+    }
+
+    const content = items.map(normalize);
+
+    return NextResponse.json({
+      success: true,
+      count: content.length,
+      items: content,
+    });
+  } catch (error) {
+    console.error("CONTENT API ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Could not load content",
+      },
+      { status: 500 }
+    );
+  }
+}

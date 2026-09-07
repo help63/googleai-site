@@ -431,36 +431,29 @@ export default function HomePage() {
                   {item.title || "Untitled Garment"}
                 </h3>
 
-                {item.salePrice !== null &&
+                {item.buyPrice !== null && item.buyPrice !== undefined && item.buyPrice !== "" && (
+                  <p style={{ color: "#94a3b8" }}>
+                    💰 Buy Rate: Rs. {item.buyPrice}
+                  </p>
+                )}
+
+                {item.salePrice !== null && item.salePrice !== undefined && item.salePrice !== "" && (
+                  <p style={{ color: "#86efac" }}>
+                    🏷️ Sale Rate: Rs. {item.salePrice}
+                  </p>
+                )}
+
+                {item.buyPrice !== null &&
+                  item.buyPrice !== undefined &&
+                  item.buyPrice !== "" &&
+                  item.salePrice !== null &&
                   item.salePrice !== undefined &&
                   item.salePrice !== "" && (
-                    <p
-                      style={{
-                        color: "#86efac",
-                        fontWeight: 900,
-                        fontSize: 18,
-                      }}
-                    >
-                      🔥 SALE: Rs. {Number(item.salePrice).toLocaleString()}
+                    <p style={{ fontWeight: 900 }}>
+                      📈 Profit: Rs.{" "}
+                      {Number(item.salePrice) - Number(item.buyPrice)}
                     </p>
                   )}
-
-                <Link
-                  href={`/content/${item.id}`}
-                  style={{
-                    display: "block",
-                    marginTop: 12,
-                    padding: 11,
-                    textAlign: "center",
-                    borderRadius: 10,
-                    background: "#ec4899",
-                    color: "#fff",
-                    textDecoration: "none",
-                    fontWeight: 900,
-                  }}
-                >
-                  🛍️ View Product
-                </Link>
               </div>
             </article>
           ))}

@@ -8,12 +8,15 @@ const TYPES = [
   ["apk", "📱 APK"],
   ["file", "📁 File"],
   ["article", "📝 Article"],
+  ["garment", "👕 Garment"],
 ];
 
 export default function ContentManager() {
   const [type, setType] = useState("game");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [buyPrice, setBuyPrice] = useState("");
+  const [salePrice, setSalePrice] = useState("");
   const [file, setFile] = useState(null);
 
   const [items, setItems] = useState([]);
@@ -68,6 +71,8 @@ export default function ContentManager() {
     form.append("type", type);
     form.append("title", title.trim());
     form.append("description", description.trim());
+    form.append("buyPrice", buyPrice);
+    form.append("salePrice", salePrice);
     form.append("file", file);
 
     try {
@@ -97,6 +102,8 @@ export default function ContentManager() {
   function resetForm() {
     setTitle("");
     setDescription("");
+    setBuyPrice("");
+    setSalePrice("");
     setFile(null);
     setEditing(null);
 
@@ -111,6 +118,8 @@ export default function ContentManager() {
     setEditing(item.id);
     setTitle(item.title || "");
     setDescription(item.description || "");
+    setBuyPrice(item.buyPrice ?? "");
+    setSalePrice(item.salePrice ?? "");
     setType(item.type || "file");
 
     window.scrollTo({
@@ -140,6 +149,8 @@ export default function ContentManager() {
           id: editing,
           title: title.trim(),
           description: description.trim(),
+          buyPrice: buyPrice ? Number(buyPrice) : null,
+          salePrice: salePrice ? Number(salePrice) : null,
         }),
       });
 
@@ -339,11 +350,7 @@ export default function ContentManager() {
           Admin-only Games, Movies, APKs and Files management.
         </p>
 
-        <form
-          onSubmit={editing ? (e) => {
-            e.preventDefault();
-            saveEdit();
-          } : upload}
+        <div
           style={{
             marginTop: 25,
             padding: 24,
@@ -381,6 +388,41 @@ export default function ContentManager() {
             placeholder="Enter title"
             style={inputStyle}
           />
+
+          {type === "garment" && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+                gap: 12,
+                marginBottom: 16,
+              }}
+            >
+              <div>
+                <label>Buy Price (Rs.)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={buyPrice}
+                  onChange={(e) => setBuyPrice(e.target.value)}
+                  placeholder="1000"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label>Sale Price (Rs.)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value)}
+                  placeholder="1500"
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+          )}
 
           <label>Description</label>
 
@@ -421,8 +463,15 @@ export default function ContentManager() {
             }}
           >
             <button
-              type="submit"
+              type="button"
               disabled={loading}
+              onClick={(e) => {
+                if (editing) {
+                  saveEdit();
+                } else {
+                  upload(e);
+                }
+              }}
               style={buttonStyle}
             >
               {loading
@@ -451,7 +500,7 @@ export default function ContentManager() {
               {message}
             </p>
           )}
-        </form>
+        </div>
 
         <section style={{ marginTop: 30 }}>
           <h2>📚 Content Library ({items.length})</h2>

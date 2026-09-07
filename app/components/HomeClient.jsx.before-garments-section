@@ -7,7 +7,29 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdSlot from "../../components/AdSlot";
 
-
+const garments = [
+  {
+    id: 1,
+    name: "Premium T-Shirt",
+    image: "",
+    buyPrice: 1000,
+    salePrice: 1500,
+  },
+  {
+    id: 2,
+    name: "Casual Shirt",
+    image: "",
+    buyPrice: 1500,
+    salePrice: 2200,
+  },
+  {
+    id: 3,
+    name: "Denim Jeans",
+    image: "",
+    buyPrice: 2000,
+    salePrice: 3000,
+  },
+];
 
 const sections = [
   ["🤖", "AI Tools", "/"],
@@ -31,7 +53,6 @@ const sections = [
 
 export default function HomePage() {
   const [content, setContent] = useState([]);
-  const [garments, setGarments] = useState([]);
   const [tvChannels, setTvChannels] = useState([]);
   const [logo, setLogo] = useState(null);
   const [links, setLinks] = useState([]);
@@ -54,10 +75,6 @@ export default function HomePage() {
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
 
-      fetch("/api/content?type=garment", { cache: "no-store" })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
-
       fetch("/api/tv", { cache: "no-store" })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
@@ -65,19 +82,11 @@ export default function HomePage() {
       fetch("/api/site-settings", { cache: "no-store" })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
-    ]).then(([contentData, garmentData, tvData, settings]) => {
+    ]).then(([contentData, tvData, settings]) => {
       if (!alive) return;
 
       if (contentData?.success) {
         setContent(contentData.items || []);
-      }
-
-      if (garmentData?.success) {
-        setGarments(
-          (garmentData.items || []).filter(
-            (item) => item.published !== false
-          )
-        );
       }
 
       if (tvData?.success) {
@@ -341,132 +350,6 @@ export default function HomePage() {
         </div>
       </section>
 
-
-      {/* GARMENTS */}
-      <section
-        style={{
-          maxWidth: 1250,
-          margin: "auto",
-          padding: "20px 18px 55px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 15,
-          }}
-        >
-          <div>
-            <h2>👕 Latest Garments</h2>
-            <p style={{ color: "#94a3b8" }}>
-              Latest clothing products and prices. ({garments.length} products)
-            </p>
-          </div>
-
-          <Link
-            href="/garments"
-            style={{
-              padding: "11px 17px",
-              borderRadius: 10,
-              background: "#7c3aed",
-              color: "#fff",
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            View All Garments →
-          </Link>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit,minmax(220px,1fr))",
-            gap: 16,
-            marginTop: 20,
-          }}
-        >
-          {garments.map((item) => (
-            <article
-              key={item.id}
-              style={{
-                overflow: "hidden",
-                borderRadius: 16,
-                background: "#111827",
-                border: "1px solid #29324d",
-              }}
-            >
-              {(item.thumbnailUrl || item.downloadUrl) ? (
-                <img
-                  src={item.thumbnailUrl || item.downloadUrl}
-                  alt={item.title || "Garment"}
-                  style={{
-                    width: "100%",
-                    height: 220,
-                    objectFit: "cover",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    height: 220,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 70,
-                    background:
-                      "linear-gradient(135deg,#312e81,#111827)",
-                  }}
-                >
-                  👕
-                </div>
-              )}
-
-              <div style={{ padding: 16 }}>
-                <h3 style={{ margin: "0 0 15px" }}>
-                  {item.title || "Untitled Garment"}
-                </h3>
-
-                {item.salePrice !== null &&
-                  item.salePrice !== undefined &&
-                  item.salePrice !== "" && (
-                    <p
-                      style={{
-                        color: "#86efac",
-                        fontWeight: 900,
-                        fontSize: 18,
-                      }}
-                    >
-                      🔥 SALE: Rs. {Number(item.salePrice).toLocaleString()}
-                    </p>
-                  )}
-
-                <Link
-                  href={`/content/${item.id}`}
-                  style={{
-                    display: "block",
-                    marginTop: 12,
-                    padding: 11,
-                    textAlign: "center",
-                    borderRadius: 10,
-                    background: "#ec4899",
-                    color: "#fff",
-                    textDecoration: "none",
-                    fontWeight: 900,
-                  }}
-                >
-                  🛍️ View Product
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
       {/* DOWNLOAD CONTENT */}
       <section
         style={{
@@ -618,45 +501,6 @@ export default function HomePage() {
                     >
                       {item.description}
                     </p>
-                  )}
-
-                  {(item.buyPrice || item.salePrice) && (
-                    <div
-                      style={{
-                        marginTop: 12,
-                        padding: 12,
-                        borderRadius: 10,
-                        background: "#0f172a",
-                        border: "1px solid #334155",
-                      }}
-                    >
-                      {item.buyPrice && (
-                        <div
-                          style={{
-                            color: "#94a3b8",
-                            fontSize: 13,
-                            textDecoration: item.salePrice
-                              ? "line-through"
-                              : "none",
-                          }}
-                        >
-                          Buy Price: Rs. {item.buyPrice}
-                        </div>
-                      )}
-
-                      {item.salePrice && (
-                        <div
-                          style={{
-                            marginTop: item.buyPrice ? 5 : 0,
-                            color: "#22c55e",
-                            fontWeight: 900,
-                            fontSize: 18,
-                          }}
-                        >
-                          Sale Price: Rs. {item.salePrice}
-                        </div>
-                      )}
-                    </div>
                   )}
 
                   <Link

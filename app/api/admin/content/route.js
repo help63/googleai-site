@@ -1,60 +1,136 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "../../../../lib/admin-auth";
-import fs from "fs/promises";
-import path from "path";
+import { Client } from "pg";
+import { promises as dns } from "dns";
 
-const dataFile = path.join(
-  process.cwd(),
-  "data",
-  "content.json"
-);
+async function createDatabaseClient() {
+  const connectionString =
+    process.env.DATABASE_URL ||
+    process.env.DATABASE_URL_UNPOOLED;
 
-async function authorized() {
-  return await isAdminAuthenticated();
-}
-
-async function readContent() {
-  try {
-    return JSON.parse(
-      await fs.readFile(dataFile, "utf8")
-    );
-  } catch {
-    return [];
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is missing");
   }
+
+  const url = new URL(connectionString);
+  const addresses = await dns.resolve4(url.hostname);
+
+  if (!addresses.length) {
+    throw new Error("No IPv4 address found for database");
+  }
+
+  return new Client({
+    host: addresses[0],
+    port: Number(url.port || 5432),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: url.pathname.replace(/^\//, ""),
+    ssl: {
+      rejectUnauthorized: false,
+      servername: url.hostname
+    },
+    connectionTimeoutMillis: 30000
+  });
 }
 
-async function saveContent(items) {
-  await fs.mkdir(path.dirname(dataFile), {
-    recursive: true,
-  });
+function formatItem(row) {
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    description: row.description || "",
+    buyPrice:
+      row.buy_price === null
+        ? null
+        : Number(row.buy_price),
+    salePrice:
+      row.sale_price === null
+        ? null
+        : Number(row.sale_price),
+    thumbnailUrl: row.thumbnail_url || "",
+    originalName: row.original_name || null,
+    filename: row.filename || null,
+    size: Number(row.size || 0),
+    mimeType: row.mime_type || null,
+    downloadUrl: row.download_url || "",
+    published: row.published !== false,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
 
-  await fs.writeFile(
-    dataFile,
-    JSON.stringify(items, null, 2)
-  );
+async function ensureTable(client) {
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS content_items (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL DEFAULT 'file',
+      title TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      buy_price NUMERIC,
+      sale_price NUMERIC,
+      thumbnail_url TEXT DEFAULT '',
+      original_name TEXT,
+      filename TEXT,
+      size BIGINT DEFAULT 0,
+      mime_type TEXT,
+      download_url TEXT,
+      published BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ
+    )
+  `);
 }
 
 export async function GET() {
-  if (!(await authorized())) {
+  if (!(await isAdminAuthenticated())) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 }
     );
   }
 
-  return NextResponse.json({
-    success: true,
-    items: await readContent(),
-  });
+  let client;
+
+  try {
+    client = await createDatabaseClient();
+    await client.connect();
+    await ensureTable(client);
+
+    const result = await client.query(
+      "SELECT * FROM content_items ORDER BY created_at DESC"
+    );
+
+    return NextResponse.json({
+      success: true,
+      items: result.rows.map(formatItem)
+    });
+  } catch (error) {
+    console.error("CONTENT LIST ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to load content",
+        details: error.message
+      },
+      { status: 500 }
+    );
+  } finally {
+    if (client) {
+      await client.end().catch(() => {});
+    }
+  }
 }
 
 export async function PUT(request) {
-  if (!(await authorized())) {
+  if (!(await isAdminAuthenticated())) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 }
     );
   }
+
+  let client;
 
   try {
     const body = await request.json();
@@ -66,50 +142,80 @@ export async function PUT(request) {
       );
     }
 
-    const items = await readContent();
+    client = await createDatabaseClient();
+    await client.connect();
+    await ensureTable(client);
 
-    const index = items.findIndex(
-      (item) => item.id === body.id
+    const existingResult = await client.query(
+      "SELECT * FROM content_items WHERE id = $1",
+      [body.id]
     );
 
-    if (index === -1) {
+    if (!existingResult.rowCount) {
       return NextResponse.json(
         { success: false, error: "Content not found" },
         { status: 404 }
       );
     }
 
-    items[index] = {
-      ...items[index],
+    const old = existingResult.rows[0];
 
-      title:
+    const result = await client.query(
+      `
+        UPDATE content_items
+        SET
+          title = $1,
+          description = $2,
+          buy_price = $3,
+          sale_price = $4,
+          thumbnail_url = $5,
+          published = $6,
+          updated_at = NOW()
+        WHERE id = $7
+        RETURNING *
+      `,
+      [
         body.title !== undefined
           ? String(body.title).trim()
-          : items[index].title,
+          : old.title,
 
-      description:
         body.description !== undefined
           ? String(body.description).trim()
-          : items[index].description,
+          : old.description,
 
-      thumbnailUrl:
+        body.buyPrice !== undefined
+          ? (
+              body.buyPrice === "" ||
+              body.buyPrice === null
+                ? null
+                : Number(body.buyPrice)
+            )
+          : old.buy_price,
+
+        body.salePrice !== undefined
+          ? (
+              body.salePrice === "" ||
+              body.salePrice === null
+                ? null
+                : Number(body.salePrice)
+            )
+          : old.sale_price,
+
         body.thumbnailUrl !== undefined
           ? String(body.thumbnailUrl).trim()
-          : items[index].thumbnailUrl || "",
+          : old.thumbnail_url,
 
-      published:
         typeof body.published === "boolean"
           ? body.published
-          : items[index].published !== false,
+          : old.published,
 
-      updatedAt: new Date().toISOString(),
-    };
-
-    await saveContent(items);
+        body.id
+      ]
+    );
 
     return NextResponse.json({
       success: true,
-      item: items[index],
+      item: formatItem(result.rows[0])
     });
   } catch (error) {
     console.error("CONTENT UPDATE ERROR:", error);
@@ -118,19 +224,26 @@ export async function PUT(request) {
       {
         success: false,
         error: "Update failed",
+        details: error.message
       },
       { status: 500 }
     );
+  } finally {
+    if (client) {
+      await client.end().catch(() => {});
+    }
   }
 }
 
 export async function DELETE(request) {
-  if (!(await authorized())) {
+  if (!(await isAdminAuthenticated())) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 }
     );
   }
+
+  let client;
 
   try {
     const body = await request.json();
@@ -142,77 +255,26 @@ export async function DELETE(request) {
       );
     }
 
-    const items = await readContent();
+    client = await createDatabaseClient();
+    await client.connect();
+    await ensureTable(client);
 
-    const item = items.find(
-      (content) => content.id === body.id
+    const result = await client.query(
+      "DELETE FROM content_items WHERE id = $1 RETURNING *",
+      [body.id]
     );
 
-    if (!item) {
+    if (!result.rowCount) {
       return NextResponse.json(
         { success: false, error: "Content not found" },
         { status: 404 }
       );
     }
 
-    /*
-     * Remove the uploaded file.
-     * Only paths generated by our upload system
-     * under public/uploads are allowed.
-     */
-    if (item.downloadUrl?.startsWith("/uploads/")) {
-      const relative = item.downloadUrl.replace(
-        /^\/+/,
-        ""
-      );
-
-      const uploadRoot = path.resolve(
-        process.cwd(),
-        "public",
-        "uploads"
-      );
-
-      const filePath = path.resolve(
-        process.cwd(),
-        "public",
-        relative
-      );
-
-      if (
-        filePath === uploadRoot ||
-        !filePath.startsWith(uploadRoot + path.sep)
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Unsafe file path",
-          },
-          { status: 400 }
-        );
-      }
-
-      try {
-        await fs.unlink(filePath);
-      } catch (error) {
-        if (error.code !== "ENOENT") {
-          console.error(
-            "PHYSICAL FILE DELETE ERROR:",
-            error
-          );
-        }
-      }
-    }
-
-    const updated = items.filter(
-      (content) => content.id !== body.id
-    );
-
-    await saveContent(updated);
-
     return NextResponse.json({
       success: true,
-      message: "Content and uploaded file deleted",
-      items: updated,
+      message: "Content deleted",
+      item: formatItem(result.rows[0])
     });
   } catch (error) {
     console.error("CONTENT DELETE ERROR:", error);
@@ -221,8 +283,13 @@ export async function DELETE(request) {
       {
         success: false,
         error: "Delete failed",
+        details: error.message
       },
       { status: 500 }
     );
+  } finally {
+    if (client) {
+      await client.end().catch(() => {});
+    }
   }
 }

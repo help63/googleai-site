@@ -1,0 +1,30 @@
+[
+  {
+    "id": "1272b612-fbed-4737-8338-9200449c599b",
+    "type": "file",
+    "title": "The Text",
+    "description": "The Text",
+    "thumbnailUrl": "",
+    "originalName": "unnamed.png",
+    "filename": "The-Text-1788154998235-4599ae963b.png",
+    "size": 270887,
+    "mimeType": "image/png",
+    "downloadUrl": "/uploads/files/The-Text-1788154998235-4599ae963b.png",
+    "published": true,
+    "createdAt": "2026-08-31T05:43:18.248Z"
+  },
+  {
+    "id": "8b2f29b6-aeb6-4fb5-9ab5-84aabdb37abb",
+    "type": "file",
+    "title": "Test File",
+    "description": "Testing upload",
+    "thumbnailUrl": "",
+    "originalName": "test.txt",
+    "filename": "Test-File-1788152909193-ef3848ec74.txt",
+    "size": 12,
+    "mimeType": "text/plain",
+    "downloadUrl": "/uploads/files/Test-File-1788152909193-ef3848ec74.txt",
+    "published": true,
+    "createdAt": "2026-08-31T05:08:29.204Z"
+  }
+]
